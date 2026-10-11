@@ -227,20 +227,31 @@ $system_logo   = Sportedia_Settings_Manager::get_setting('system_logo', '');
     </div>
     <div id="spTimerText" class="sp-timer-label">Refreshing code in 5.0s</div>
 
-    <!-- Barcode Scanner Field -->
+    <!-- Barcode Scanner Field & Camera Engine -->
     <div class="sp-scan-section">
         <label style="font-size: 12px; font-weight: 700; display: block; margin-bottom: 8px; text-transform: uppercase; color: var(--sp-primary);">
-            Barcode Scanner Ready
+            Unified Barcode & Camera Scanner Engine
         </label>
+
+        <!-- Video Stream Container -->
+        <div id="spKioskCameraContainer" style="display: none; margin-bottom: 12px; position: relative; border-radius: 12px; overflow: hidden; border: 2px solid #2B3245;">
+            <video id="spKioskVideo" playsinline style="width: 100%; height: 200px; object-fit: cover; background: #000;"></video>
+            <div style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: #ffffff; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600;">Camera Stream Active</div>
+        </div>
+
+        <button type="button" class="sp-btn" id="spToggleCameraBtn" onclick="toggleKioskCamera()" style="margin-bottom: 10px; background: #2B3245; color: #ffffff;">
+            Toggle Camera Scanner
+        </button>
+
         <div style="position: relative; margin-bottom: 10px;">
             <input type="text" id="spKioskBarcodeInput" class="sp-input" placeholder="Scan Barcode ID (Employee / Subscriber)..." autocomplete="off" autofocus style="padding-right: 40px; font-family: monospace; font-size: 14px; font-weight: 600;">
-            <div style="position: absolute; right: 12px; top: 12px; color: #16a34a; font-size: 18px;" title="Scanner Active">&#x25CF;</div>
+            <div style="position: absolute; right: 12px; top: 12px; color: #3E8E41; font-size: 18px;" title="Scanner Active">&#x25CF;</div>
         </div>
-        <button type="button" class="sp-btn" onclick="submitKioskBarcodeScan()">
+        <button type="button" class="sp-btn" onclick="submitKioskBarcodeScan()" style="background: #C02030;">
             Process Barcode Scan
         </button>
         <?php if (is_user_logged_in()) : ?>
-            <button type="button" class="sp-btn" onclick="scanCurrentToken()" style="margin-top: 8px; background: #374151;">
+            <button type="button" class="sp-btn" onclick="scanCurrentToken()" style="margin-top: 8px; background: #2B3245;">
                 Quick Self Scan (<?php echo esc_html($current_user->display_name); ?>)
             </button>
         <?php endif; ?>
@@ -320,8 +331,70 @@ function showToast(msg) {
     }, 4000);
 }
 
-function submitKioskBarcodeScan() {
-    var barcode = $('#spKioskBarcodeInput').val().trim();
+var cameraStream = null;
+var cameraScanning = false;
+
+function toggleKioskCamera() {
+    if (cameraScanning) {
+        stopKioskCamera();
+    } else {
+        startKioskCamera();
+    }
+}
+
+function startKioskCamera() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        showToast('Camera access not supported on this browser.');
+        return;
+    }
+
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+        .then(function(stream) {
+            cameraStream = stream;
+            cameraScanning = true;
+            var video = document.getElementById('spKioskVideo');
+            video.srcObject = stream;
+            video.play();
+            $('#spKioskCameraContainer').slideDown(200);
+            $('#spToggleCameraBtn').text('Stop Camera Scanner').css('background', '#C02030');
+
+            if ('BarcodeDetector' in window) {
+                var detector = new BarcodeDetector();
+                var scanFrame = function() {
+                    if (!cameraScanning) return;
+                    detector.detect(video).then(function(barcodes) {
+                        if (barcodes.length > 0) {
+                            var code = barcodes[0].rawValue;
+                            if (code) {
+                                $('#spKioskBarcodeInput').val(code);
+                                submitKioskBarcodeScan();
+                            }
+                        }
+                        if (cameraScanning) requestAnimationFrame(scanFrame);
+                    }).catch(function() {
+                        if (cameraScanning) requestAnimationFrame(scanFrame);
+                    });
+                };
+                requestAnimationFrame(scanFrame);
+            }
+        })
+        .catch(function(err) {
+            showToast('Unable to access camera: ' + err.message);
+        });
+}
+
+function stopKioskCamera() {
+    if (cameraStream) {
+        cameraStream.getTracks().forEach(function(track) { track.stop(); });
+        cameraStream = null;
+    }
+    cameraScanning = false;
+    $('#spKioskCameraContainer').slideUp(200);
+    $('#spToggleCameraBtn').text('Toggle Camera Scanner').css('background', '#2B3245');
+}
+
+function submitKioskBarcodeScan(customBarcode) {
+    var barcode = customBarcode || $('#spKioskBarcodeInput').val().trim();
     if (!barcode) {
         showToast('Please scan or enter a barcode.');
         return;

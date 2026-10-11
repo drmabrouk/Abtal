@@ -110,68 +110,68 @@ $system_logo       = Sportedia_Settings_Manager::get_setting('system_logo', '');
             <button type="button" class="sp-modal-close" onclick="spCloseModal('spEmpCardModal')">&times;</button>
         </div>
 
-        <div id="spEmpCardSheet">
-            <!-- Header Section -->
-            <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #ffffff; padding: 20px; display: flex; justify-content: space-between; align-items: center; position: relative;">
+        <div id="spEmpCardSheet" style="background: #ffffff; font-family: 'Google Sans Flex', -apple-system, sans-serif; color: #1E2025; border-radius: 16px; overflow: hidden;">
+            <!-- Branded Header Banner -->
+            <div style="background: linear-gradient(135deg, #2B3245 0%, #1E2025 100%); color: #ffffff; padding: 22px 20px; display: flex; justify-content: space-between; align-items: center; position: relative;">
                 <div style="display: flex; align-items: center; gap: 12px;">
                     <div>
                         <?php if (!empty($system_logo)) : ?>
-                            <img src="<?php echo esc_url($system_logo); ?>" style="max-height: 38px; max-width: 100px; object-fit: contain;">
+                            <img src="<?php echo esc_url($system_logo); ?>" style="max-height: 40px; max-width: 110px; object-fit: contain;">
                         <?php else : ?>
-                            <div style="width: 36px; height: 36px; background: #ffffff; color: #000000; font-weight: 800; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px;">S</div>
+                            <div style="width: 38px; height: 38px; background: #C02030; color: #ffffff; font-weight: 800; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 20px;">S</div>
                         <?php endif; ?>
                     </div>
                     <div>
-                        <strong style="font-size: 16px; display: block; letter-spacing: -0.3px;">Sportedia</strong>
-                        <span style="font-size: 10px; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.5px;">Employee Credentials Card</span>
+                        <strong style="font-size: 17px; display: block; letter-spacing: -0.3px;">Sportedia</strong>
+                        <span style="font-size: 10.5px; opacity: 0.9; text-transform: uppercase; letter-spacing: 0.5px;">Employee Credentials Card</span>
                     </div>
                 </div>
-                <span id="emp_card_role_badge" style="font-size: 10px; background: rgba(255,255,255,0.15); padding: 4px 10px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2);">Staff</span>
+                <span id="emp_card_role_badge" style="font-size: 11px; background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.3); font-weight: 600;">Staff</span>
             </div>
 
             <!-- Profile & Main Info Section -->
-            <div style="padding: 20px; font-family: 'Google Sans Flex', -apple-system, sans-serif;">
+            <div style="padding: 22px 20px 20px 20px; background: #ffffff;">
                 <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 18px;">
-                    <div id="emp_card_avatar_box" style="width: 64px; height: 64px; border-radius: 50%; overflow: hidden; border: 2px solid #0f172a; background: #f1f5f9; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
-                        <span id="emp_card_avatar_initial" style="font-size: 24px; font-weight: 700; color: #334155;">E</span>
+                    <div id="emp_card_avatar_box" style="width: 68px; height: 68px; border-radius: 50%; overflow: hidden; border: 3px solid #2B3245; background: #F2F4F7; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
+                        <span id="emp_card_avatar_initial" style="font-size: 26px; font-weight: 700; color: #2B3245;">E</span>
                         <img id="emp_card_avatar_img" src="" style="width: 100%; height: 100%; object-fit: cover; display: none;">
                     </div>
-                    <div style="flex: 1;">
-                        <span id="emp_card_status_badge" class="sp-badge sp-badge-active" style="display: inline-block; margin-bottom: 4px; font-size: 10px; padding: 2px 8px;">Active Staff</span>
-                        <h3 id="emp_card_name" style="margin: 0; font-size: 18px; font-weight: 700; color: #0f172a;">Employee Name</h3>
-                        <span id="emp_card_id" style="font-size: 12px; font-family: monospace; color: #64748b; display: block;">ID: EMP001</span>
+                    <div style="flex: 1;" id="emp_card_text_container">
+                        <span id="emp_card_status_badge" class="sp-badge sp-badge-active" style="display: inline-block; margin-bottom: 4px; font-size: 10px; padding: 3px 10px; background: #2B3245; color: #ffffff; border: none; border-radius: 12px; font-weight: 700;">ACTIVE STAFF</span>
+                        <h3 id="emp_card_name" style="margin: 2px 0 0 0; font-size: 19px; font-weight: 700; color: #1E2025; letter-spacing: -0.3px;">Employee Name</h3>
+                        <span id="emp_card_id" style="font-size: 12.5px; font-family: monospace; color: #6b7280; font-weight: 600; display: block; margin-top: 2px;">ID: EMP001</span>
                     </div>
                 </div>
 
                 <!-- Details Grid -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f8fafc; padding: 14px; border-radius: 12px; margin-bottom: 16px; border: 1px solid #e2e8f0; font-size: 12px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: #F2F4F7; padding: 14px 16px; border-radius: 12px; margin-bottom: 18px; border: 1px solid #e5e7eb; font-size: 12px;">
                     <div>
-                        <span style="font-size: 10px; color: #64748b; display: block; text-transform: uppercase;">Official Role</span>
-                        <strong id="emp_card_role_text" style="font-size: 12px; color: #0f172a; display: block;">Staff Officer</strong>
+                        <span style="font-size: 10px; color: #6b7280; display: block; text-transform: uppercase; font-weight: 600; letter-spacing: 0.3px;">Official Role</span>
+                        <strong id="emp_card_role_text" style="font-size: 13px; color: #2B3245; display: block; margin-top: 2px;">Staff Officer</strong>
                     </div>
                     <div>
-                        <span style="font-size: 10px; color: #64748b; display: block; text-transform: uppercase;">Mobile Contact</span>
-                        <span id="emp_card_phone" style="font-size: 11px; font-weight: 600;">+971 50 000 0000</span>
+                        <span style="font-size: 10px; color: #6b7280; display: block; text-transform: uppercase; font-weight: 600; letter-spacing: 0.3px;">Mobile Contact</span>
+                        <span id="emp_card_phone" style="font-size: 11.5px; font-weight: 600; color: #1E2025; display: block; margin-top: 2px;">+971 50 000 0000</span>
                     </div>
                     <div>
-                        <span style="font-size: 10px; color: #64748b; display: block; text-transform: uppercase;">Standard Shift</span>
-                        <span id="emp_card_shift" style="font-size: 11px; font-family: monospace; font-weight: 600;">09:00 - 17:00</span>
+                        <span style="font-size: 10px; color: #6b7280; display: block; text-transform: uppercase; font-weight: 600; letter-spacing: 0.3px;">Standard Shift</span>
+                        <span id="emp_card_shift" style="font-size: 11.5px; font-family: monospace; font-weight: 700; color: #1E2025; display: block; margin-top: 2px;">09:00 - 17:00</span>
                     </div>
                     <div>
-                        <span style="font-size: 10px; color: #64748b; display: block; text-transform: uppercase;">Email</span>
-                        <span id="emp_card_email" style="font-size: 11px; font-weight: 500; word-break: break-all;">staff@sportedia.online</span>
+                        <span style="font-size: 10px; color: #6b7280; display: block; text-transform: uppercase; font-weight: 600; letter-spacing: 0.3px;">Email Address</span>
+                        <span id="emp_card_email" style="font-size: 11.5px; font-weight: 500; color: #1E2025; word-break: break-all; display: block; margin-top: 2px;">staff@sportedia.online</span>
                     </div>
                 </div>
 
-                <!-- Barcode Area -->
-                <div style="text-align: center; background: #ffffff; padding: 14px; border-radius: 12px; border: 1px dashed #cbd5e1; margin-bottom: 14px;">
-                    <div id="emp_card_barcode_lines" style="display: flex; justify-content: center; gap: 2px; height: 42px; margin-bottom: 6px;"></div>
-                    <span id="emp_card_barcode_text" style="font-family: monospace; font-size: 13px; font-weight: 700; letter-spacing: 2px; color: #0f172a;">*EMP001*</span>
+                <!-- Barcode Container -->
+                <div style="text-align: center; background: #ffffff; padding: 14px; border-radius: 12px; border: 1px dashed #cbd5e1; margin-bottom: 16px;">
+                    <div id="emp_card_barcode_lines" style="display: flex; justify-content: center; gap: 2px; height: 44px; margin-bottom: 6px;"></div>
+                    <span id="emp_card_barcode_text" style="font-family: monospace; font-size: 13px; font-weight: 700; letter-spacing: 2px; color: #2B3245;">*EMP001*</span>
                 </div>
 
                 <!-- Context-Aware Instructions Footer -->
-                <div style="background: #f1f5f9; border-left: 3px solid #0f172a; padding: 10px 12px; border-radius: 4px; font-size: 11px; color: #475569; line-height: 1.4;">
-                    <strong>Staff Instructions:</strong> Present this barcode ID at any Sportedia Kiosk terminal for automated check-in & check-out. Credentials are non-transferable and strictly confidential.
+                <div style="background: #F2F4F7; border-left: 4px solid #2B3245; padding: 10px 14px; border-radius: 6px; font-size: 11px; color: #2B3245; line-height: 1.45;">
+                    <strong>Staff Instructions:</strong> Present this digital barcode at any Sportedia Kiosk terminal for automated staff check-in & check-out. Credentials are non-transferable and strictly confidential.
                 </div>
             </div>
         </div>
@@ -180,10 +180,10 @@ $system_logo       = Sportedia_Settings_Manager::get_setting('system_logo', '');
         <div style="padding: 12px 20px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; gap: 8px; justify-content: flex-end;" class="sp-no-print">
             <button type="button" class="sp-btn sp-btn-secondary sp-btn-sm" onclick="downloadEmployeeCardPNG()">Download PNG</button>
             <button type="button" class="sp-btn sp-btn-secondary sp-btn-sm" onclick="window.print()">Print Card</button>
-            <a id="emp_card_whatsapp_link" href="#" target="_blank" class="sp-btn sp-btn-primary sp-btn-sm" style="background-color: #16a34a; border-color: #16a34a; display: inline-flex; align-items: center; gap: 4px;">
+            <button type="button" id="emp_card_whatsapp_btn" onclick="shareEmployeeCardWhatsApp()" class="sp-btn sp-btn-primary sp-btn-sm" style="background-color: #16a34a; border-color: #16a34a; display: inline-flex; align-items: center; gap: 4px;">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l.399.635-1.157 4.225 4.323-1.135.578.342z"/></svg>
                 Share via WhatsApp
-            </a>
+            </button>
             <button type="button" class="sp-btn sp-btn-secondary sp-btn-sm" onclick="spCloseModal('spEmpCardModal')">Close</button>
         </div>
     </div>
@@ -378,64 +378,90 @@ $system_logo       = Sportedia_Settings_Manager::get_setting('system_logo', '');
 </div>
 
 <script>
-function downloadEmployeeCardPNG() {
+function generateEmployeeCardCanvas() {
     var canvas = document.createElement('canvas');
-    canvas.width = 800;
-    canvas.height = 1000;
+    canvas.width = 600;
+    canvas.height = 850;
     var ctx = canvas.getContext('2d');
 
     // Background
     ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, 800, 1000);
+    ctx.fillRect(0, 0, 600, 850);
 
-    // Header Banner
-    var grad = ctx.createLinearGradient(0, 0, 800, 180);
-    grad.addColorStop(0, '#0f172a');
-    grad.addColorStop(1, '#1e293b');
+    // Header Banner (Navy/Slate Gradient)
+    var grad = ctx.createLinearGradient(0, 0, 600, 150);
+    grad.addColorStop(0, '#2B3245');
+    grad.addColorStop(1, '#1E2025');
     ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, 800, 180);
+    ctx.fillRect(0, 0, 600, 150);
 
     // Header Text
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 32px -apple-system, sans-serif';
-    ctx.fillText('Sportedia', 40, 75);
-    ctx.font = '16px -apple-system, sans-serif';
-    ctx.fillStyle = '#94a3b8';
-    ctx.fillText('EMPLOYEE CREDENTIALS CARD', 40, 115);
+    ctx.font = 'bold 26px -apple-system, sans-serif';
+    ctx.fillText('Sportedia', 30, 65);
+    ctx.font = '13px -apple-system, sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.fillText('EMPLOYEE CREDENTIALS CARD', 30, 95);
 
     // Role Badge
     var rBadge = jQuery('#emp_card_role_badge').text() || 'Staff';
-    ctx.fillStyle = 'rgba(255,255,255,0.15)';
-    ctx.fillRect(580, 50, 180, 40);
+    ctx.fillStyle = 'rgba(255,255,255,0.2)';
+    ctx.fillRect(420, 45, 150, 34);
     ctx.fillStyle = '#ffffff';
-    ctx.font = '14px -apple-system, sans-serif';
-    ctx.fillText(rBadge, 600, 75);
+    ctx.font = 'bold 13px -apple-system, sans-serif';
+    ctx.fillText(rBadge, 435, 67);
 
-    // Employee Info Section
+    // Check if Avatar is visible
+    var hasAvatar = jQuery('#emp_card_avatar_box').is(':visible');
+    var startX = hasAvatar ? 120 : 30;
+
+    // Avatar Circle (if visible)
+    if (hasAvatar) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(65, 210, 32, 0, Math.PI * 2, true);
+        ctx.closePath();
+        ctx.clip();
+        ctx.fillStyle = '#F2F4F7';
+        ctx.fillRect(33, 178, 64, 64);
+        var initial = (jQuery('#emp_card_name').text() || 'E').charAt(0).toUpperCase();
+        ctx.fillStyle = '#2B3245';
+        ctx.font = 'bold 24px -apple-system, sans-serif';
+        ctx.fillText(initial, 57, 218);
+        ctx.restore();
+
+        ctx.strokeStyle = '#2B3245';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(65, 210, 32, 0, Math.PI * 2, true);
+        ctx.stroke();
+    }
+
+    // Employee Name & ID
     var eName  = jQuery('#emp_card_name').text() || 'Employee Name';
     var eId    = jQuery('#emp_card_id').text() || 'EMP001';
-    var status = jQuery('#emp_card_status_badge').text() || 'Active Staff';
+    var status = jQuery('#emp_card_status_badge').text() || 'ACTIVE STAFF';
 
-    ctx.fillStyle = '#0f172a';
-    ctx.font = 'bold 32px -apple-system, sans-serif';
-    ctx.fillText(eName, 40, 260);
+    ctx.fillStyle = '#2B3245';
+    ctx.fillRect(startX, 175, 140, 24);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 11px -apple-system, sans-serif';
+    ctx.fillText(status, startX + 10, 191);
+
+    ctx.fillStyle = '#1E2025';
+    ctx.font = 'bold 24px -apple-system, sans-serif';
+    ctx.fillText(eName, startX, 230);
 
     ctx.fillStyle = '#64748b';
-    ctx.font = 'bold 20px monospace';
-    ctx.fillText(eId, 40, 295);
-
-    ctx.fillStyle = '#1e293b';
-    ctx.fillRect(40, 315, 180, 32);
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 14px -apple-system, sans-serif';
-    ctx.fillText(status, 55, 336);
+    ctx.font = 'bold 15px monospace';
+    ctx.fillText(eId, startX, 255);
 
     // Details Grid Box
-    ctx.fillStyle = '#f8fafc';
-    ctx.strokeStyle = '#e2e8f0';
-    ctx.lineWidth = 2;
-    ctx.fillRect(40, 370, 720, 260);
-    ctx.strokeRect(40, 370, 720, 260);
+    ctx.fillStyle = '#F2F4F7';
+    ctx.strokeStyle = '#e5e7eb';
+    ctx.lineWidth = 1;
+    ctx.fillRect(30, 285, 540, 220);
+    ctx.strokeRect(30, 285, 540, 220);
 
     var role  = jQuery('#emp_card_role_text').text();
     var phone = jQuery('#emp_card_phone').text();
@@ -443,71 +469,129 @@ function downloadEmployeeCardPNG() {
     var email = jQuery('#emp_card_email').text();
 
     ctx.fillStyle = '#64748b';
-    ctx.font = 'bold 14px -apple-system, sans-serif';
-    ctx.fillText('OFFICIAL ROLE', 70, 415);
-    ctx.fillStyle = '#0f172a';
-    ctx.font = 'bold 20px -apple-system, sans-serif';
-    ctx.fillText(role, 70, 445);
+    ctx.font = 'bold 11px -apple-system, sans-serif';
+    ctx.fillText('OFFICIAL ROLE', 55, 325);
+    ctx.fillStyle = '#2B3245';
+    ctx.font = 'bold 16px -apple-system, sans-serif';
+    ctx.fillText(role, 55, 350);
 
     ctx.fillStyle = '#64748b';
-    ctx.font = 'bold 14px -apple-system, sans-serif';
-    ctx.fillText('MOBILE CONTACT', 420, 415);
-    ctx.fillStyle = '#0f172a';
-    ctx.font = 'bold 20px -apple-system, sans-serif';
-    ctx.fillText(phone, 420, 445);
+    ctx.font = 'bold 11px -apple-system, sans-serif';
+    ctx.fillText('MOBILE CONTACT', 315, 325);
+    ctx.fillStyle = '#2B3245';
+    ctx.font = 'bold 16px -apple-system, sans-serif';
+    ctx.fillText(phone, 315, 350);
 
     ctx.fillStyle = '#64748b';
-    ctx.font = 'bold 14px -apple-system, sans-serif';
-    ctx.fillText('STANDARD SHIFT', 70, 525);
-    ctx.fillStyle = '#0f172a';
-    ctx.font = 'bold 18px monospace';
-    ctx.fillText(shift, 70, 555);
+    ctx.font = 'bold 11px -apple-system, sans-serif';
+    ctx.fillText('STANDARD SHIFT', 55, 415);
+    ctx.fillStyle = '#1E2025';
+    ctx.font = 'bold 15px monospace';
+    ctx.fillText(shift, 55, 440);
 
     ctx.fillStyle = '#64748b';
+    ctx.font = 'bold 11px -apple-system, sans-serif';
+    ctx.fillText('EMAIL ADDRESS', 315, 415);
+    ctx.fillStyle = '#1E2025';
     ctx.font = 'bold 14px -apple-system, sans-serif';
-    ctx.fillText('EMAIL ADDRESS', 420, 525);
-    ctx.fillStyle = '#0f172a';
-    ctx.font = 'bold 18px -apple-system, sans-serif';
-    ctx.fillText(email, 420, 555);
+    ctx.fillText(email, 315, 440);
 
     // Barcode Container Box
     ctx.fillStyle = '#ffffff';
     ctx.strokeStyle = '#cbd5e1';
-    ctx.fillRect(40, 660, 720, 160);
-    ctx.strokeRect(40, 660, 720, 160);
+    ctx.fillRect(30, 530, 540, 150);
+    ctx.strokeRect(30, 530, 540, 150);
 
     // Render Barcode
     var cleanId = eId.replace('ID: ', '');
-    ctx.fillStyle = '#0f172a';
+    ctx.fillStyle = '#2B3245';
     var hash = 0;
     for (var i = 0; i < cleanId.length; i++) hash = cleanId.charCodeAt(i) + ((hash << 5) - hash);
-    var x = 120;
-    for (var j = 0; j < 60; j++) {
+    var x = 80;
+    for (var j = 0; j < 50; j++) {
         var w = (Math.abs(hash + j * 7) % 5) + 2;
-        ctx.fillRect(x, 680, w, 80);
+        ctx.fillRect(x, 550, w, 75);
         x += w + 4;
     }
 
-    ctx.fillStyle = '#0f172a';
-    ctx.font = 'bold 22px monospace';
-    ctx.fillText('*' + cleanId + '*', 320, 795);
+    ctx.fillStyle = '#2B3245';
+    ctx.font = 'bold 18px monospace';
+    ctx.fillText('*' + cleanId + '*', 230, 655);
 
     // Instructions Box
-    ctx.fillStyle = '#f1f5f9';
-    ctx.fillRect(40, 840, 720, 100);
-    ctx.fillStyle = '#0f172a';
-    ctx.fillRect(40, 840, 10, 100);
+    ctx.fillStyle = '#F2F4F7';
+    ctx.fillRect(30, 700, 540, 100);
+    ctx.fillStyle = '#2B3245';
+    ctx.fillRect(30, 700, 8, 100);
 
-    ctx.fillStyle = '#475569';
-    ctx.font = '15px -apple-system, sans-serif';
-    ctx.fillText('Staff Instructions: Present this barcode ID at any Sportedia Kiosk terminal for', 65, 875);
-    ctx.fillText('automated check-in & check-out. Credentials are strictly confidential.', 65, 905);
+    ctx.fillStyle = '#2B3245';
+    ctx.font = '13px -apple-system, sans-serif';
+    ctx.fillText('Staff Instructions: Present this digital barcode at any Sportedia Kiosk terminal for', 50, 735);
+    ctx.fillText('automated check-in & check-out. Credentials are non-transferable and confidential.', 50, 765);
 
-    // Trigger Download
+    return canvas;
+}
+
+function downloadEmployeeCardPNG() {
+    var canvas = generateEmployeeCardCanvas();
+    var eId = (jQuery('#emp_card_id').text() || 'EMP').replace('ID: ', '').trim();
     var link = document.createElement('a');
-    link.download = 'Sportedia_Employee_Card_' + cleanId + '.png';
+    link.download = 'Sportedia_Employee_Card_' + eId + '.png';
     link.href = canvas.toDataURL('image/png');
     link.click();
+}
+
+function shareEmployeeCardWhatsApp() {
+    var eName  = jQuery('#emp_card_name').text() || 'Employee';
+    var eId    = (jQuery('#emp_card_id').text() || 'EMP').replace('ID: ', '').trim();
+    var phone  = jQuery('#emp_card_phone').text() || '';
+    var role   = jQuery('#emp_card_role_text').text() || 'Staff';
+
+    var cleanPhone = phone.replace(/[^0-9]/g, '');
+    var waText = "Hello " + eName + ",\n\nHere is your Sportedia Official Employee Credentials ID Card:\nID: " + eId + "\nRole: " + role + "\n\nInstructions: Present this barcode at any Sportedia Kiosk for staff check-in/out. Strictly confidential.";
+
+    var canvas = generateEmployeeCardCanvas();
+
+    if (navigator.canShare && canvas.toBlob) {
+        canvas.toBlob(function(blob) {
+            if (blob) {
+                var file = new File([blob], 'Sportedia_Employee_Card_' + eId + '.png', { type: 'image/png' });
+                if (navigator.canShare({ files: [file] })) {
+                    navigator.share({
+                        title: 'Sportedia Employee ID Card',
+                        text: waText,
+                        files: [file]
+                    }).catch(function() {
+                        // Cancelled
+                    });
+                    return;
+                }
+            }
+            fallbackDesktopEmployeeWhatsAppShare(canvas.toDataURL('image/png'), cleanPhone, waText);
+        }, 'image/png');
+    } else {
+        fallbackDesktopEmployeeWhatsAppShare(canvas.toDataURL('image/png'), cleanPhone, waText);
+    }
+}
+
+function fallbackDesktopEmployeeWhatsAppShare(imageData, cleanPhone, waText) {
+    jQuery('#emp_card_whatsapp_btn').text('Uploading Card...').prop('disabled', true);
+    jQuery.post(sportedia_vars.ajax_url, {
+        action: 'sportedia_upload_card_image',
+        nonce: sportedia_vars.nonce,
+        image_data: imageData
+    }, function(res) {
+        jQuery('#emp_card_whatsapp_btn').html('<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l.399.635-1.157 4.225 4.323-1.135.578.342z"/></svg> Share via WhatsApp').prop('disabled', false);
+
+        var fullMessage = waText;
+        if (res.success && res.data.image_url) {
+            fullMessage += "\n\nDigital Card Image: " + res.data.image_url;
+        }
+        window.open('https://api.whatsapp.com/send?phone=' + cleanPhone + '&text=' + encodeURIComponent(fullMessage), '_blank');
+    }).fail(function() {
+        jQuery('#emp_card_whatsapp_btn').html('Share via WhatsApp').prop('disabled', false);
+        window.open('https://api.whatsapp.com/send?phone=' + cleanPhone + '&text=' + encodeURIComponent(waText), '_blank');
+    });
 }
 
 function renderEmpBarcodeLines(containerId, text) {

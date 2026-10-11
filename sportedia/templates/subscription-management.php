@@ -437,68 +437,68 @@ foreach ((array)$curr_u->roles as $r) {
             <button type="button" class="sp-modal-close" onclick="spCloseModal('spCardModal')">&times;</button>
         </div>
 
-        <div id="spA6CardSheet">
-            <!-- Digital Card Header Banner -->
-            <div style="background: linear-gradient(135deg, #000000 0%, #1f2937 100%); color: #ffffff; padding: 20px; display: flex; justify-content: space-between; align-items: center; position: relative;">
+        <div id="spA6CardSheet" style="background: #ffffff; font-family: 'Google Sans Flex', -apple-system, sans-serif; color: #1E2025; border-radius: 16px; overflow: hidden;">
+            <!-- Branded Header Banner -->
+            <div style="background: linear-gradient(135deg, #C02030 0%, #2B3245 100%); color: #ffffff; padding: 22px 20px; display: flex; justify-content: space-between; align-items: center; position: relative;">
                 <div style="display: flex; align-items: center; gap: 12px;">
                     <div id="card_system_logo_box">
                         <?php if (!empty($system_logo)) : ?>
-                            <img src="<?php echo esc_url($system_logo); ?>" style="max-height: 38px; max-width: 100px; object-fit: contain;">
+                            <img src="<?php echo esc_url($system_logo); ?>" style="max-height: 40px; max-width: 110px; object-fit: contain;">
                         <?php else : ?>
-                            <div style="width: 36px; height: 36px; background: #ffffff; color: #000000; font-weight: 800; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px;">S</div>
+                            <div style="width: 38px; height: 38px; background: #ffffff; color: #C02030; font-weight: 800; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 20px;">S</div>
                         <?php endif; ?>
                     </div>
                     <div>
-                        <strong style="font-size: 16px; display: block; letter-spacing: -0.3px;">Sportedia</strong>
-                        <span style="font-size: 10px; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.5px;">Digital ID Business Card</span>
+                        <strong style="font-size: 17px; display: block; letter-spacing: -0.3px;">Sportedia</strong>
+                        <span style="font-size: 10.5px; opacity: 0.9; text-transform: uppercase; letter-spacing: 0.5px;">Digital Subscriber Card</span>
                     </div>
                 </div>
-                <span id="card_branch_badge" style="font-size: 11px; background: rgba(255,255,255,0.15); padding: 4px 10px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2);">Main Branch</span>
+                <span id="card_branch_badge" style="font-size: 11px; background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.3); font-weight: 600;">Main Branch</span>
             </div>
 
             <!-- Profile & Main Info Section -->
-            <div style="padding: 20px; font-family: 'Google Sans Flex', -apple-system, sans-serif;">
+            <div style="padding: 22px 20px 20px 20px; background: #ffffff;">
                 <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 18px;">
-                    <div id="card_avatar_box" style="width: 64px; height: 64px; border-radius: 50%; overflow: hidden; border: 2px solid #000000; background: #f3f4f6; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
-                        <span id="card_avatar_initial" style="font-size: 24px; font-weight: 700; color: #374151;">M</span>
+                    <div id="card_avatar_box" style="width: 68px; height: 68px; border-radius: 50%; overflow: hidden; border: 3px solid #C02030; background: #F2F4F7; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
+                        <span id="card_avatar_initial" style="font-size: 26px; font-weight: 700; color: #2B3245;">M</span>
                         <img id="card_avatar_img" src="" style="width: 100%; height: 100%; object-fit: cover; display: none;">
                     </div>
-                    <div style="flex: 1;">
-                        <span id="card_status_badge" class="sp-badge sp-badge-active" style="display: inline-block; margin-bottom: 4px; font-size: 10px; padding: 2px 8px;">Active Subscriber</span>
-                        <h3 id="card_member_name" style="margin: 0; font-size: 18px; font-weight: 700; color: #111827;">John Doe</h3>
-                        <span id="card_member_id" style="font-size: 12px; font-family: monospace; color: #6b7280; display: block;">ID: MEM-1001</span>
+                    <div style="flex: 1;" id="card_text_container">
+                        <span id="card_status_badge" class="sp-badge sp-badge-active" style="display: inline-block; margin-bottom: 4px; font-size: 10px; padding: 3px 10px; background: #3E8E41; color: #ffffff; border: none; border-radius: 12px; font-weight: 700;">ACTIVE SUBSCRIBER</span>
+                        <h3 id="card_member_name" style="margin: 2px 0 0 0; font-size: 19px; font-weight: 700; color: #1E2025; letter-spacing: -0.3px;">Subscriber Name</h3>
+                        <span id="card_member_id" style="font-size: 12.5px; font-family: monospace; color: #6b7280; font-weight: 600; display: block; margin-top: 2px;">ID: MEM-1001</span>
                     </div>
                 </div>
 
                 <!-- Business Details Grid -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f8fafc; padding: 14px; border-radius: 12px; margin-bottom: 16px; border: 1px solid #e2e8f0; font-size: 12px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: #F2F4F7; padding: 14px 16px; border-radius: 12px; margin-bottom: 18px; border: 1px solid #e5e7eb; font-size: 12px;">
                     <div>
-                        <span style="font-size: 10px; color: #6b7280; display: block; text-transform: uppercase;">Subscription Plan</span>
-                        <strong id="card_program" style="font-size: 13px; color: #000000; display: block;">Football Training</strong>
+                        <span style="font-size: 10px; color: #6b7280; display: block; text-transform: uppercase; font-weight: 600; letter-spacing: 0.3px;">Subscription Plan</span>
+                        <strong id="card_program" style="font-size: 13px; color: #2B3245; display: block; margin-top: 2px;">Football Training</strong>
                     </div>
                     <div>
-                        <span style="font-size: 10px; color: #6b7280; display: block; text-transform: uppercase;">Assigned Coach</span>
-                        <strong id="card_coach" style="font-size: 13px; color: #000000; display: block;">Coach Alex</strong>
+                        <span style="font-size: 10px; color: #6b7280; display: block; text-transform: uppercase; font-weight: 600; letter-spacing: 0.3px;">Assigned Coach</span>
+                        <strong id="card_coach" style="font-size: 13px; color: #2B3245; display: block; margin-top: 2px;">Coach Alex</strong>
                     </div>
                     <div>
-                        <span style="font-size: 10px; color: #6b7280; display: block; text-transform: uppercase;">Validity Period</span>
-                        <span id="card_validity_period" style="font-size: 11px; font-family: monospace; font-weight: 600;">2026-03-01 &rarr; 2026-03-31</span>
+                        <span style="font-size: 10px; color: #6b7280; display: block; text-transform: uppercase; font-weight: 600; letter-spacing: 0.3px;">Validity Period</span>
+                        <span id="card_validity_period" style="font-size: 11.5px; font-family: monospace; font-weight: 700; color: #1E2025; display: block; margin-top: 2px;">2026-03-01 &rarr; 2026-03-31</span>
                     </div>
                     <div>
-                        <span style="font-size: 10px; color: #6b7280; display: block; text-transform: uppercase;">Mobile Number</span>
-                        <span id="card_phone" style="font-size: 11px; font-weight: 600;">+971 50 000 0000</span>
+                        <span style="font-size: 10px; color: #6b7280; display: block; text-transform: uppercase; font-weight: 600; letter-spacing: 0.3px;">Mobile Contact</span>
+                        <span id="card_phone" style="font-size: 11.5px; font-weight: 600; color: #1E2025; display: block; margin-top: 2px;">+971 50 000 0000</span>
                     </div>
                 </div>
 
-                <!-- Barcode & Scan Section -->
-                <div style="text-align: center; background: #ffffff; padding: 14px; border-radius: 12px; border: 1px dashed #cbd5e1; margin-bottom: 14px;">
-                    <div id="card_barcode_lines" style="display: flex; justify-content: center; gap: 2px; height: 42px; margin-bottom: 6px;"></div>
-                    <span id="card_barcode_text" style="font-family: monospace; font-size: 13px; font-weight: 700; letter-spacing: 2px; color: #000000;">*MEM-1001*</span>
+                <!-- Barcode Container -->
+                <div style="text-align: center; background: #ffffff; padding: 14px; border-radius: 12px; border: 1px dashed #cbd5e1; margin-bottom: 16px;">
+                    <div id="card_barcode_lines" style="display: flex; justify-content: center; gap: 2px; height: 44px; margin-bottom: 6px;"></div>
+                    <span id="card_barcode_text" style="font-family: monospace; font-size: 13px; font-weight: 700; letter-spacing: 2px; color: #2B3245;">*MEM-1001*</span>
                 </div>
 
-                <!-- Context-Aware Subscriber Instructions Footer -->
-                <div style="background: #f1f5f9; border-left: 3px solid #000000; padding: 10px 12px; border-radius: 4px; font-size: 11px; color: #475569; line-height: 1.4;">
-                    <strong>Subscriber Instructions:</strong> Present this barcode at the facility entrance or kiosk to verify your subscription session. Valid for active plan holders only.
+                <!-- Context-Aware Instructions Footer -->
+                <div style="background: #F2F4F7; border-left: 4px solid #C02030; padding: 10px 14px; border-radius: 6px; font-size: 11px; color: #2B3245; line-height: 1.45;">
+                    <strong>Subscriber Instructions:</strong> Present this digital barcode at any Sportedia entrance or kiosk terminal to verify your subscription session. Valid for active plan holders only.
                 </div>
             </div>
         </div>
@@ -507,10 +507,10 @@ foreach ((array)$curr_u->roles as $r) {
         <div style="padding: 12px 20px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; gap: 8px; justify-content: flex-end;" class="sp-no-print">
             <button type="button" class="sp-btn sp-btn-secondary sp-btn-sm" onclick="downloadSubscriberCardPNG()">Download PNG</button>
             <button type="button" class="sp-btn sp-btn-secondary sp-btn-sm" onclick="window.print()">Print Card</button>
-            <a id="card_whatsapp_link" href="#" target="_blank" class="sp-btn sp-btn-primary sp-btn-sm" style="background-color: #16a34a; border-color: #16a34a; display: inline-flex; align-items: center; gap: 4px;">
+            <button type="button" id="card_whatsapp_btn" onclick="shareSubscriberCardWhatsApp()" class="sp-btn sp-btn-primary sp-btn-sm" style="background-color: #16a34a; border-color: #16a34a; display: inline-flex; align-items: center; gap: 4px;">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l.399.635-1.157 4.225 4.323-1.135.578.342z"/></svg>
                 Share via WhatsApp
-            </a>
+            </button>
             <button type="button" class="sp-btn sp-btn-secondary sp-btn-sm" onclick="spCloseModal('spCardModal')">Close</button>
         </div>
     </div>
@@ -726,64 +726,90 @@ function viewA5Invoice(s) {
     spOpenModal('spInvoiceModal');
 }
 
-function downloadSubscriberCardPNG() {
+function generateSubscriberCardCanvas() {
     var canvas = document.createElement('canvas');
-    canvas.width = 800;
-    canvas.height = 1000;
+    canvas.width = 600;
+    canvas.height = 850;
     var ctx = canvas.getContext('2d');
 
     // Background
     ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, 800, 1000);
+    ctx.fillRect(0, 0, 600, 850);
 
-    // Header Banner
-    var grad = ctx.createLinearGradient(0, 0, 800, 180);
-    grad.addColorStop(0, '#000000');
-    grad.addColorStop(1, '#1f2937');
+    // Header Banner (Crimson Red & Dark Navy Gradient)
+    var grad = ctx.createLinearGradient(0, 0, 600, 150);
+    grad.addColorStop(0, '#C02030');
+    grad.addColorStop(1, '#2B3245');
     ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, 800, 180);
+    ctx.fillRect(0, 0, 600, 150);
 
     // Header Text
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 32px -apple-system, sans-serif';
-    ctx.fillText('Sportedia', 40, 75);
-    ctx.font = '16px -apple-system, sans-serif';
-    ctx.fillStyle = '#9ca3af';
-    ctx.fillText('DIGITAL ID BUSINESS CARD', 40, 115);
+    ctx.font = 'bold 26px -apple-system, sans-serif';
+    ctx.fillText('Sportedia', 30, 65);
+    ctx.font = '13px -apple-system, sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.fillText('DIGITAL SUBSCRIBER CARD', 30, 95);
 
     // Branch Badge
     var bName = jQuery('#card_branch_badge').text() || 'Main Branch';
-    ctx.fillStyle = 'rgba(255,255,255,0.15)';
-    ctx.fillRect(580, 50, 180, 40);
+    ctx.fillStyle = 'rgba(255,255,255,0.2)';
+    ctx.fillRect(420, 45, 150, 34);
     ctx.fillStyle = '#ffffff';
-    ctx.font = '14px -apple-system, sans-serif';
-    ctx.fillText(bName, 600, 75);
+    ctx.font = 'bold 13px -apple-system, sans-serif';
+    ctx.fillText(bName, 435, 67);
 
-    // Member Info Section
-    var mName  = jQuery('#card_member_name').text() || 'Member Name';
+    // Check if Avatar is visible
+    var hasAvatar = jQuery('#card_avatar_box').is(':visible');
+    var startX = hasAvatar ? 120 : 30;
+
+    // Avatar Circle (if visible)
+    if (hasAvatar) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(65, 210, 32, 0, Math.PI * 2, true);
+        ctx.closePath();
+        ctx.clip();
+        ctx.fillStyle = '#F2F4F7';
+        ctx.fillRect(33, 178, 64, 64);
+        var initial = (jQuery('#card_member_name').text() || 'S').charAt(0).toUpperCase();
+        ctx.fillStyle = '#2B3245';
+        ctx.font = 'bold 24px -apple-system, sans-serif';
+        ctx.fillText(initial, 57, 218);
+        ctx.restore();
+
+        ctx.strokeStyle = '#C02030';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(65, 210, 32, 0, Math.PI * 2, true);
+        ctx.stroke();
+    }
+
+    // Member Name & ID
+    var mName  = jQuery('#card_member_name').text() || 'Subscriber Name';
     var mId    = jQuery('#card_member_id').text() || 'MEM-1001';
-    var status = jQuery('#card_status_badge').text() || 'Active Subscriber';
+    var status = jQuery('#card_status_badge').text() || 'ACTIVE SUBSCRIBER';
 
-    ctx.fillStyle = '#111827';
-    ctx.font = 'bold 32px -apple-system, sans-serif';
-    ctx.fillText(mName, 40, 260);
+    ctx.fillStyle = '#3E8E41';
+    ctx.fillRect(startX, 175, 170, 24);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 11px -apple-system, sans-serif';
+    ctx.fillText(status, startX + 10, 191);
+
+    ctx.fillStyle = '#1E2025';
+    ctx.font = 'bold 24px -apple-system, sans-serif';
+    ctx.fillText(mName, startX, 230);
 
     ctx.fillStyle = '#6b7280';
-    ctx.font = 'bold 20px monospace';
-    ctx.fillText(mId, 40, 295);
-
-    ctx.fillStyle = '#166534';
-    ctx.fillRect(40, 315, 200, 32);
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 14px -apple-system, sans-serif';
-    ctx.fillText(status, 55, 336);
+    ctx.font = 'bold 15px monospace';
+    ctx.fillText(mId, startX, 255);
 
     // Details Grid Box
-    ctx.fillStyle = '#f8fafc';
-    ctx.strokeStyle = '#e2e8f0';
-    ctx.lineWidth = 2;
-    ctx.fillRect(40, 370, 720, 260);
-    ctx.strokeRect(40, 370, 720, 260);
+    ctx.fillStyle = '#F2F4F7';
+    ctx.strokeStyle = '#e5e7eb';
+    ctx.lineWidth = 1;
+    ctx.fillRect(30, 285, 540, 220);
+    ctx.strokeRect(30, 285, 540, 220);
 
     var pName = jQuery('#card_program').text();
     var cName = jQuery('#card_coach').text();
@@ -791,71 +817,132 @@ function downloadSubscriberCardPNG() {
     var phone = jQuery('#card_phone').text();
 
     ctx.fillStyle = '#6b7280';
-    ctx.font = 'bold 14px -apple-system, sans-serif';
-    ctx.fillText('SUBSCRIPTION PLAN', 70, 415);
-    ctx.fillStyle = '#000000';
-    ctx.font = 'bold 20px -apple-system, sans-serif';
-    ctx.fillText(pName, 70, 445);
+    ctx.font = 'bold 11px -apple-system, sans-serif';
+    ctx.fillText('SUBSCRIPTION PLAN', 55, 325);
+    ctx.fillStyle = '#2B3245';
+    ctx.font = 'bold 16px -apple-system, sans-serif';
+    ctx.fillText(pName, 55, 350);
 
     ctx.fillStyle = '#6b7280';
-    ctx.font = 'bold 14px -apple-system, sans-serif';
-    ctx.fillText('ASSIGNED COACH', 420, 415);
-    ctx.fillStyle = '#000000';
-    ctx.font = 'bold 20px -apple-system, sans-serif';
-    ctx.fillText(cName, 420, 445);
+    ctx.font = 'bold 11px -apple-system, sans-serif';
+    ctx.fillText('ASSIGNED COACH', 315, 325);
+    ctx.fillStyle = '#2B3245';
+    ctx.font = 'bold 16px -apple-system, sans-serif';
+    ctx.fillText(cName, 315, 350);
 
     ctx.fillStyle = '#6b7280';
-    ctx.font = 'bold 14px -apple-system, sans-serif';
-    ctx.fillText('VALIDITY PERIOD', 70, 525);
-    ctx.fillStyle = '#000000';
-    ctx.font = 'bold 18px monospace';
-    ctx.fillText(dates, 70, 555);
+    ctx.font = 'bold 11px -apple-system, sans-serif';
+    ctx.fillText('VALIDITY PERIOD', 55, 415);
+    ctx.fillStyle = '#1E2025';
+    ctx.font = 'bold 15px monospace';
+    ctx.fillText(dates, 55, 440);
 
     ctx.fillStyle = '#6b7280';
-    ctx.font = 'bold 14px -apple-system, sans-serif';
-    ctx.fillText('MOBILE NUMBER', 420, 525);
-    ctx.fillStyle = '#000000';
-    ctx.font = 'bold 18px -apple-system, sans-serif';
-    ctx.fillText(phone, 420, 555);
+    ctx.font = 'bold 11px -apple-system, sans-serif';
+    ctx.fillText('MOBILE CONTACT', 315, 415);
+    ctx.fillStyle = '#1E2025';
+    ctx.font = 'bold 15px -apple-system, sans-serif';
+    ctx.fillText(phone, 315, 440);
 
     // Barcode Container Box
     ctx.fillStyle = '#ffffff';
     ctx.strokeStyle = '#cbd5e1';
-    ctx.fillRect(40, 660, 720, 160);
-    ctx.strokeRect(40, 660, 720, 160);
+    ctx.fillRect(30, 530, 540, 150);
+    ctx.strokeRect(30, 530, 540, 150);
 
     // Render Barcode
     var cleanId = mId.replace('ID: ', '');
-    ctx.fillStyle = '#000000';
+    ctx.fillStyle = '#2B3245';
     var hash = 0;
     for (var i = 0; i < cleanId.length; i++) hash = cleanId.charCodeAt(i) + ((hash << 5) - hash);
-    var x = 120;
-    for (var j = 0; j < 60; j++) {
+    var x = 80;
+    for (var j = 0; j < 50; j++) {
         var w = (Math.abs(hash + j * 7) % 5) + 2;
-        ctx.fillRect(x, 680, w, 80);
+        ctx.fillRect(x, 550, w, 75);
         x += w + 4;
     }
 
-    ctx.fillStyle = '#000000';
-    ctx.font = 'bold 22px monospace';
-    ctx.fillText('*' + cleanId + '*', 320, 795);
+    ctx.fillStyle = '#2B3245';
+    ctx.font = 'bold 18px monospace';
+    ctx.fillText('*' + cleanId + '*', 230, 655);
 
     // Instructions Box
-    ctx.fillStyle = '#f1f5f9';
-    ctx.fillRect(40, 840, 720, 100);
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(40, 840, 10, 100);
+    ctx.fillStyle = '#F2F4F7';
+    ctx.fillRect(30, 700, 540, 100);
+    ctx.fillStyle = '#C02030';
+    ctx.fillRect(30, 700, 8, 100);
 
-    ctx.fillStyle = '#475569';
-    ctx.font = '15px -apple-system, sans-serif';
-    ctx.fillText('Subscriber Instructions: Present this barcode at the facility entrance or kiosk to', 65, 875);
-    ctx.fillText('verify your subscription session. Valid for active plan holders only.', 65, 905);
+    ctx.fillStyle = '#2B3245';
+    ctx.font = '13px -apple-system, sans-serif';
+    ctx.fillText('Subscriber Instructions: Present this digital barcode at any Sportedia entrance or', 50, 735);
+    ctx.fillText('kiosk terminal to verify your subscription session. Valid for active plan holders only.', 50, 765);
 
-    // Trigger Download
+    return canvas;
+}
+
+function downloadSubscriberCardPNG() {
+    var canvas = generateSubscriberCardCanvas();
+    var mId = (jQuery('#card_member_id').text() || 'MEM').replace('ID: ', '').trim();
     var link = document.createElement('a');
-    link.download = 'Sportedia_Subscriber_Card_' + cleanId + '.png';
+    link.download = 'Sportedia_Subscriber_Card_' + mId + '.png';
     link.href = canvas.toDataURL('image/png');
     link.click();
+}
+
+function shareSubscriberCardWhatsApp() {
+    var mName  = jQuery('#card_member_name').text() || 'Subscriber';
+    var mId    = (jQuery('#card_member_id').text() || 'MEM').replace('ID: ', '').trim();
+    var phone  = jQuery('#card_phone').text() || '';
+    var pName  = jQuery('#card_program').text() || 'Plan';
+    var dates  = jQuery('#card_validity_period').text() || '';
+
+    var cleanPhone = phone.replace(/[^0-9]/g, '');
+    var waText = "Hello " + mName + ",\n\nHere is your Sportedia Official Digital Subscriber ID Card:\nMember ID: " + mId + "\nPlan: " + pName + "\nValidity: " + dates + "\n\nInstructions: Present this barcode at any Sportedia entrance or kiosk to verify your session.";
+
+    var canvas = generateSubscriberCardCanvas();
+
+    // Check Web Share API with File sharing support
+    if (navigator.canShare && canvas.toBlob) {
+        canvas.toBlob(function(blob) {
+            if (blob) {
+                var file = new File([blob], 'Sportedia_Subscriber_Card_' + mId + '.png', { type: 'image/png' });
+                if (navigator.canShare({ files: [file] })) {
+                    navigator.share({
+                        title: 'Sportedia Subscriber ID Card',
+                        text: waText,
+                        files: [file]
+                    }).catch(function() {
+                        // User cancelled share
+                    });
+                    return;
+                }
+            }
+            // Fallback if file share unsupported
+            fallbackDesktopWhatsAppShare(canvas.toDataURL('image/png'), cleanPhone, waText);
+        }, 'image/png');
+    } else {
+        fallbackDesktopWhatsAppShare(canvas.toDataURL('image/png'), cleanPhone, waText);
+    }
+}
+
+function fallbackDesktopWhatsAppShare(imageData, cleanPhone, waText) {
+    jQuery('#card_whatsapp_btn').text('Uploading Card...').prop('disabled', true);
+    jQuery.post(sportedia_vars.ajax_url, {
+        action: 'sportedia_upload_card_image',
+        nonce: sportedia_vars.nonce,
+        image_data: imageData
+    }, function(res) {
+        jQuery('#card_whatsapp_btn').html('<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l.399.635-1.157 4.225 4.323-1.135.578.342z"/></svg> Share via WhatsApp').prop('disabled', false);
+
+        var fullMessage = waText;
+        if (res.success && res.data.image_url) {
+            fullMessage += "\n\nDigital Card Image: " + res.data.image_url;
+        }
+        window.open('https://api.whatsapp.com/send?phone=' + cleanPhone + '&text=' + encodeURIComponent(fullMessage), '_blank');
+    }).fail(function() {
+        jQuery('#card_whatsapp_btn').html('Share via WhatsApp').prop('disabled', false);
+        window.open('https://api.whatsapp.com/send?phone=' + cleanPhone + '&text=' + encodeURIComponent(waText), '_blank');
+    });
 }
 
 function viewA6Card(s) {

@@ -490,15 +490,21 @@ foreach ((array)$curr_u->roles as $r) {
                 </div>
 
                 <!-- Barcode & Scan Section -->
-                <div style="text-align: center; background: #ffffff; padding: 14px; border-radius: 12px; border: 1px dashed #cbd5e1;">
+                <div style="text-align: center; background: #ffffff; padding: 14px; border-radius: 12px; border: 1px dashed #cbd5e1; margin-bottom: 14px;">
                     <div id="card_barcode_lines" style="display: flex; justify-content: center; gap: 2px; height: 42px; margin-bottom: 6px;"></div>
                     <span id="card_barcode_text" style="font-family: monospace; font-size: 13px; font-weight: 700; letter-spacing: 2px; color: #000000;">*MEM-1001*</span>
+                </div>
+
+                <!-- Context-Aware Subscriber Instructions Footer -->
+                <div style="background: #f1f5f9; border-left: 3px solid #000000; padding: 10px 12px; border-radius: 4px; font-size: 11px; color: #475569; line-height: 1.4;">
+                    <strong>Subscriber Instructions:</strong> Present this barcode at the facility entrance or kiosk to verify your subscription session. Valid for active plan holders only.
                 </div>
             </div>
         </div>
 
         <!-- Footer Actions -->
         <div style="padding: 12px 20px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; gap: 8px; justify-content: flex-end;" class="sp-no-print">
+            <button type="button" class="sp-btn sp-btn-secondary sp-btn-sm" onclick="downloadSubscriberCardPNG()">Download PNG</button>
             <button type="button" class="sp-btn sp-btn-secondary sp-btn-sm" onclick="window.print()">Print Card</button>
             <a id="card_whatsapp_link" href="#" target="_blank" class="sp-btn sp-btn-primary sp-btn-sm" style="background-color: #16a34a; border-color: #16a34a; display: inline-flex; align-items: center; gap: 4px;">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l.399.635-1.157 4.225 4.323-1.135.578.342z"/></svg>
@@ -717,6 +723,138 @@ function viewA5Invoice(s) {
 
     latestSubData = s;
     spOpenModal('spInvoiceModal');
+}
+
+function downloadSubscriberCardPNG() {
+    var canvas = document.createElement('canvas');
+    canvas.width = 800;
+    canvas.height = 1000;
+    var ctx = canvas.getContext('2d');
+
+    // Background
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, 800, 1000);
+
+    // Header Banner
+    var grad = ctx.createLinearGradient(0, 0, 800, 180);
+    grad.addColorStop(0, '#000000');
+    grad.addColorStop(1, '#1f2937');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 800, 180);
+
+    // Header Text
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 32px -apple-system, sans-serif';
+    ctx.fillText('Sportedia', 40, 75);
+    ctx.font = '16px -apple-system, sans-serif';
+    ctx.fillStyle = '#9ca3af';
+    ctx.fillText('DIGITAL ID BUSINESS CARD', 40, 115);
+
+    // Branch Badge
+    var bName = jQuery('#card_branch_badge').text() || 'Main Branch';
+    ctx.fillStyle = 'rgba(255,255,255,0.15)';
+    ctx.fillRect(580, 50, 180, 40);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '14px -apple-system, sans-serif';
+    ctx.fillText(bName, 600, 75);
+
+    // Member Info Section
+    var mName  = jQuery('#card_member_name').text() || 'Member Name';
+    var mId    = jQuery('#card_member_id').text() || 'MEM-1001';
+    var status = jQuery('#card_status_badge').text() || 'Active Subscriber';
+
+    ctx.fillStyle = '#111827';
+    ctx.font = 'bold 32px -apple-system, sans-serif';
+    ctx.fillText(mName, 40, 260);
+
+    ctx.fillStyle = '#6b7280';
+    ctx.font = 'bold 20px monospace';
+    ctx.fillText(mId, 40, 295);
+
+    ctx.fillStyle = '#166534';
+    ctx.fillRect(40, 315, 200, 32);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 14px -apple-system, sans-serif';
+    ctx.fillText(status, 55, 336);
+
+    // Details Grid Box
+    ctx.fillStyle = '#f8fafc';
+    ctx.strokeStyle = '#e2e8f0';
+    ctx.lineWidth = 2;
+    ctx.fillRect(40, 370, 720, 260);
+    ctx.strokeRect(40, 370, 720, 260);
+
+    var pName = jQuery('#card_program').text();
+    var cName = jQuery('#card_coach').text();
+    var dates = jQuery('#card_validity_period').text();
+    var phone = jQuery('#card_phone').text();
+
+    ctx.fillStyle = '#6b7280';
+    ctx.font = 'bold 14px -apple-system, sans-serif';
+    ctx.fillText('SUBSCRIPTION PLAN', 70, 415);
+    ctx.fillStyle = '#000000';
+    ctx.font = 'bold 20px -apple-system, sans-serif';
+    ctx.fillText(pName, 70, 445);
+
+    ctx.fillStyle = '#6b7280';
+    ctx.font = 'bold 14px -apple-system, sans-serif';
+    ctx.fillText('ASSIGNED COACH', 420, 415);
+    ctx.fillStyle = '#000000';
+    ctx.font = 'bold 20px -apple-system, sans-serif';
+    ctx.fillText(cName, 420, 445);
+
+    ctx.fillStyle = '#6b7280';
+    ctx.font = 'bold 14px -apple-system, sans-serif';
+    ctx.fillText('VALIDITY PERIOD', 70, 525);
+    ctx.fillStyle = '#000000';
+    ctx.font = 'bold 18px monospace';
+    ctx.fillText(dates, 70, 555);
+
+    ctx.fillStyle = '#6b7280';
+    ctx.font = 'bold 14px -apple-system, sans-serif';
+    ctx.fillText('MOBILE NUMBER', 420, 525);
+    ctx.fillStyle = '#000000';
+    ctx.font = 'bold 18px -apple-system, sans-serif';
+    ctx.fillText(phone, 420, 555);
+
+    // Barcode Container Box
+    ctx.fillStyle = '#ffffff';
+    ctx.strokeStyle = '#cbd5e1';
+    ctx.fillRect(40, 660, 720, 160);
+    ctx.strokeRect(40, 660, 720, 160);
+
+    // Render Barcode
+    var cleanId = mId.replace('ID: ', '');
+    ctx.fillStyle = '#000000';
+    var hash = 0;
+    for (var i = 0; i < cleanId.length; i++) hash = cleanId.charCodeAt(i) + ((hash << 5) - hash);
+    var x = 120;
+    for (var j = 0; j < 60; j++) {
+        var w = (Math.abs(hash + j * 7) % 5) + 2;
+        ctx.fillRect(x, 680, w, 80);
+        x += w + 4;
+    }
+
+    ctx.fillStyle = '#000000';
+    ctx.font = 'bold 22px monospace';
+    ctx.fillText('*' + cleanId + '*', 320, 795);
+
+    // Instructions Box
+    ctx.fillStyle = '#f1f5f9';
+    ctx.fillRect(40, 840, 720, 100);
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(40, 840, 10, 100);
+
+    ctx.fillStyle = '#475569';
+    ctx.font = '15px -apple-system, sans-serif';
+    ctx.fillText('Subscriber Instructions: Present this barcode at the facility entrance or kiosk to', 65, 875);
+    ctx.fillText('verify your subscription session. Valid for active plan holders only.', 65, 905);
+
+    // Trigger Download
+    var link = document.createElement('a');
+    link.download = 'Sportedia_Subscriber_Card_' + cleanId + '.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
 }
 
 function viewA6Card(s) {

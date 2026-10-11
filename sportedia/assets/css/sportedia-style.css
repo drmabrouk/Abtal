@@ -453,6 +453,50 @@ textarea.sp-floating-input {
   border-color: #fecaca;
 }
 
+/* Digital Mobile ID Business Card Enhancements */
+.sp-digital-card-sheet {
+  background: #ffffff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--sp-border-color);
+  max-width: 440px;
+  margin: 0 auto;
+}
+
+.sp-digital-card-header {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  color: #ffffff;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sp-digital-card-body {
+  padding: 20px;
+}
+
+.sp-digital-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  background: #f8fafc;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  font-size: 12px;
+  margin-bottom: 16px;
+}
+
+.sp-barcode-box {
+  text-align: center;
+  background: #ffffff;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px dashed #cbd5e1;
+}
+
 /* Buttons */
 .sp-btn {
   display: inline-flex;
@@ -561,6 +605,8 @@ textarea.sp-floating-input {
   #spInvoiceModal.open, #spInvoiceModal.open *,
   #spCardModal.active, #spCardModal.active *,
   #spCardModal.open, #spCardModal.open *,
+  #spEmpCardModal.active, #spEmpCardModal.active *,
+  #spEmpCardModal.open, #spEmpCardModal.open *,
   #spPayrollReportModal.active, #spPayrollReportModal.active *,
   #spPayrollReportModal.open, #spPayrollReportModal.open * {
     visibility: visible !important;
@@ -568,6 +614,7 @@ textarea.sp-floating-input {
 
   #spInvoiceModal.active, #spInvoiceModal.open,
   #spCardModal.active, #spCardModal.open,
+  #spEmpCardModal.active, #spEmpCardModal.open,
   #spPayrollReportModal.active, #spPayrollReportModal.open {
     position: absolute !important;
     left: 0 !important;

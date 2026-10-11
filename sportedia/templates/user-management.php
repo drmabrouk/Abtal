@@ -8,6 +8,7 @@ $branch_filter = isset($_GET['branch_filter']) ? intval($_GET['branch_filter']) 
 $usersList         = Sportedia_User_Manager::get_users($search, $role_filter, $branch_filter);
 $branchesList      = Sportedia_Branch_Manager::get_branches();
 $nationalitiesList = Sportedia_User_Manager::get_nationalities();
+$system_logo       = Sportedia_Settings_Manager::get_setting('system_logo', '');
 ?>
 
 <div class="sp-page-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 20px;">
@@ -82,11 +83,18 @@ $nationalitiesList = Sportedia_User_Manager::get_nationalities();
                     <span><?php echo esc_html($u['nationality'] ? $u['nationality'] : 'N/A'); ?> | <?php echo esc_html($u['phone'] ? $u['phone'] : 'N/A'); ?></span>
                 </div>
 
-                <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
                     <span class="sp-badge <?php echo $u['status'] === 'active' ? 'sp-badge-active' : 'sp-badge-inactive'; ?>">
                         <?php echo esc_html(ucfirst($u['status'])); ?>
                     </span>
 
+                    <?php
+                        $clean_phone = preg_replace('/[^0-9]/', '', $u['phone']);
+                        $wa_text = rawurlencode("Hello " . $u['name'] . ",\n\nHere is your Sportedia Official Employee ID Card:\nID: " . $u['employee_id'] . "\nRole: " . $u['role'] . "\nStatus: " . ucfirst($u['status']) . "\n\nInstructions: Present your barcode at the attendance kiosk for staff check-in/check-out. Keep strictly confidential.");
+                        $wa_link = !empty($clean_phone) ? ("https://api.whatsapp.com/send?phone=" . $clean_phone . "&text=" . $wa_text) : '#';
+                    ?>
+                    <button class="sp-btn sp-btn-secondary sp-btn-sm" onclick='viewEmpCard(<?php echo json_encode($u); ?>)'>ID Card</button>
+                    <a href="<?php echo esc_url($wa_link); ?>" target="_blank" class="sp-btn sp-btn-secondary sp-btn-sm" style="color: #16a34a; border-color: #16a34a;" title="Share ID Card via WhatsApp">WhatsApp</a>
                     <button class="sp-btn sp-btn-secondary sp-btn-sm" onclick='editUser(<?php echo json_encode($u); ?>)'>Edit Profile</button>
                     <button class="sp-btn sp-btn-secondary sp-btn-sm" style="color:#dc2626;" onclick="deleteUser(<?php echo $u['id']; ?>)">Delete</button>
                 </div>
@@ -99,6 +107,93 @@ $nationalitiesList = Sportedia_User_Manager::get_nationalities();
         <p>No users match your query parameters.</p>
     </div>
 <?php endif; ?>
+
+<!-- Dedicated Employee Digital Mobile ID Business Card Modal -->
+<div id="spEmpCardModal" class="sp-modal">
+    <div class="sp-modal-content" style="max-width: 440px; padding: 0; background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e5e7eb; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);" id="spPrintableEmpCardModal">
+        <div class="sp-modal-header sp-no-print" style="padding: 12px 16px; margin: 0; background: var(--sp-bg-main);">
+            <h3 class="sp-modal-title">Employee Digital ID Business Card</h3>
+            <button type="button" class="sp-modal-close" onclick="spCloseModal('spEmpCardModal')">&times;</button>
+        </div>
+
+        <div id="spEmpCardSheet">
+            <!-- Header Section -->
+            <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #ffffff; padding: 20px; display: flex; justify-content: space-between; align-items: center; position: relative;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div>
+                        <?php if (!empty($system_logo)) : ?>
+                            <img src="<?php echo esc_url($system_logo); ?>" style="max-height: 38px; max-width: 100px; object-fit: contain;">
+                        <?php else : ?>
+                            <div style="width: 36px; height: 36px; background: #ffffff; color: #000000; font-weight: 800; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px;">S</div>
+                        <?php endif; ?>
+                    </div>
+                    <div>
+                        <strong style="font-size: 16px; display: block; letter-spacing: -0.3px;">Sportedia</strong>
+                        <span style="font-size: 10px; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.5px;">Employee Credentials Card</span>
+                    </div>
+                </div>
+                <span id="emp_card_role_badge" style="font-size: 10px; background: rgba(255,255,255,0.15); padding: 4px 10px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2);">Staff</span>
+            </div>
+
+            <!-- Profile & Main Info Section -->
+            <div style="padding: 20px; font-family: 'Google Sans Flex', -apple-system, sans-serif;">
+                <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 18px;">
+                    <div style="width: 64px; height: 64px; border-radius: 50%; overflow: hidden; border: 2px solid #0f172a; background: #f1f5f9; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
+                        <span id="emp_card_avatar_initial" style="font-size: 24px; font-weight: 700; color: #334155;">E</span>
+                        <img id="emp_card_avatar_img" src="" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                    </div>
+                    <div style="flex: 1;">
+                        <span id="emp_card_status_badge" class="sp-badge sp-badge-active" style="display: inline-block; margin-bottom: 4px; font-size: 10px; padding: 2px 8px;">Active Staff</span>
+                        <h3 id="emp_card_name" style="margin: 0; font-size: 18px; font-weight: 700; color: #0f172a;">Employee Name</h3>
+                        <span id="emp_card_id" style="font-size: 12px; font-family: monospace; color: #64748b; display: block;">ID: EMP001</span>
+                    </div>
+                </div>
+
+                <!-- Details Grid -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f8fafc; padding: 14px; border-radius: 12px; margin-bottom: 16px; border: 1px solid #e2e8f0; font-size: 12px;">
+                    <div>
+                        <span style="font-size: 10px; color: #64748b; display: block; text-transform: uppercase;">Official Role</span>
+                        <strong id="emp_card_role_text" style="font-size: 12px; color: #0f172a; display: block;">Staff Officer</strong>
+                    </div>
+                    <div>
+                        <span style="font-size: 10px; color: #64748b; display: block; text-transform: uppercase;">Mobile Contact</span>
+                        <span id="emp_card_phone" style="font-size: 11px; font-weight: 600;">+971 50 000 0000</span>
+                    </div>
+                    <div>
+                        <span style="font-size: 10px; color: #64748b; display: block; text-transform: uppercase;">Standard Shift</span>
+                        <span id="emp_card_shift" style="font-size: 11px; font-family: monospace; font-weight: 600;">09:00 - 17:00</span>
+                    </div>
+                    <div>
+                        <span style="font-size: 10px; color: #64748b; display: block; text-transform: uppercase;">Email</span>
+                        <span id="emp_card_email" style="font-size: 11px; font-weight: 500; word-break: break-all;">staff@sportedia.online</span>
+                    </div>
+                </div>
+
+                <!-- Barcode Area -->
+                <div style="text-align: center; background: #ffffff; padding: 14px; border-radius: 12px; border: 1px dashed #cbd5e1; margin-bottom: 14px;">
+                    <div id="emp_card_barcode_lines" style="display: flex; justify-content: center; gap: 2px; height: 42px; margin-bottom: 6px;"></div>
+                    <span id="emp_card_barcode_text" style="font-family: monospace; font-size: 13px; font-weight: 700; letter-spacing: 2px; color: #0f172a;">*EMP001*</span>
+                </div>
+
+                <!-- Context-Aware Instructions Footer -->
+                <div style="background: #f1f5f9; border-left: 3px solid #0f172a; padding: 10px 12px; border-radius: 4px; font-size: 11px; color: #475569; line-height: 1.4;">
+                    <strong>Staff Instructions:</strong> Present this barcode ID at any Sportedia Kiosk terminal for automated check-in & check-out. Credentials are non-transferable and strictly confidential.
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Actions -->
+        <div style="padding: 12px 20px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; gap: 8px; justify-content: flex-end;" class="sp-no-print">
+            <button type="button" class="sp-btn sp-btn-secondary sp-btn-sm" onclick="downloadEmployeeCardPNG()">Download PNG</button>
+            <button type="button" class="sp-btn sp-btn-secondary sp-btn-sm" onclick="window.print()">Print Card</button>
+            <a id="emp_card_whatsapp_link" href="#" target="_blank" class="sp-btn sp-btn-primary sp-btn-sm" style="background-color: #16a34a; border-color: #16a34a; display: inline-flex; align-items: center; gap: 4px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l.399.635-1.157 4.225 4.323-1.135.578.342z"/></svg>
+                Share via WhatsApp
+            </a>
+            <button type="button" class="sp-btn sp-btn-secondary sp-btn-sm" onclick="spCloseModal('spEmpCardModal')">Close</button>
+        </div>
+    </div>
+</div>
 
 <!-- Modal Dialog for User Create/Edit -->
 <div id="spUserModal" class="sp-modal">
@@ -289,6 +384,187 @@ $nationalitiesList = Sportedia_User_Manager::get_nationalities();
 </div>
 
 <script>
+function downloadEmployeeCardPNG() {
+    var canvas = document.createElement('canvas');
+    canvas.width = 800;
+    canvas.height = 1000;
+    var ctx = canvas.getContext('2d');
+
+    // Background
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, 800, 1000);
+
+    // Header Banner
+    var grad = ctx.createLinearGradient(0, 0, 800, 180);
+    grad.addColorStop(0, '#0f172a');
+    grad.addColorStop(1, '#1e293b');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 800, 180);
+
+    // Header Text
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 32px -apple-system, sans-serif';
+    ctx.fillText('Sportedia', 40, 75);
+    ctx.font = '16px -apple-system, sans-serif';
+    ctx.fillStyle = '#94a3b8';
+    ctx.fillText('EMPLOYEE CREDENTIALS CARD', 40, 115);
+
+    // Role Badge
+    var rBadge = jQuery('#emp_card_role_badge').text() || 'Staff';
+    ctx.fillStyle = 'rgba(255,255,255,0.15)';
+    ctx.fillRect(580, 50, 180, 40);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '14px -apple-system, sans-serif';
+    ctx.fillText(rBadge, 600, 75);
+
+    // Employee Info Section
+    var eName  = jQuery('#emp_card_name').text() || 'Employee Name';
+    var eId    = jQuery('#emp_card_id').text() || 'EMP001';
+    var status = jQuery('#emp_card_status_badge').text() || 'Active Staff';
+
+    ctx.fillStyle = '#0f172a';
+    ctx.font = 'bold 32px -apple-system, sans-serif';
+    ctx.fillText(eName, 40, 260);
+
+    ctx.fillStyle = '#64748b';
+    ctx.font = 'bold 20px monospace';
+    ctx.fillText(eId, 40, 295);
+
+    ctx.fillStyle = '#1e293b';
+    ctx.fillRect(40, 315, 180, 32);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 14px -apple-system, sans-serif';
+    ctx.fillText(status, 55, 336);
+
+    // Details Grid Box
+    ctx.fillStyle = '#f8fafc';
+    ctx.strokeStyle = '#e2e8f0';
+    ctx.lineWidth = 2;
+    ctx.fillRect(40, 370, 720, 260);
+    ctx.strokeRect(40, 370, 720, 260);
+
+    var role  = jQuery('#emp_card_role_text').text();
+    var phone = jQuery('#emp_card_phone').text();
+    var shift = jQuery('#emp_card_shift').text();
+    var email = jQuery('#emp_card_email').text();
+
+    ctx.fillStyle = '#64748b';
+    ctx.font = 'bold 14px -apple-system, sans-serif';
+    ctx.fillText('OFFICIAL ROLE', 70, 415);
+    ctx.fillStyle = '#0f172a';
+    ctx.font = 'bold 20px -apple-system, sans-serif';
+    ctx.fillText(role, 70, 445);
+
+    ctx.fillStyle = '#64748b';
+    ctx.font = 'bold 14px -apple-system, sans-serif';
+    ctx.fillText('MOBILE CONTACT', 420, 415);
+    ctx.fillStyle = '#0f172a';
+    ctx.font = 'bold 20px -apple-system, sans-serif';
+    ctx.fillText(phone, 420, 445);
+
+    ctx.fillStyle = '#64748b';
+    ctx.font = 'bold 14px -apple-system, sans-serif';
+    ctx.fillText('STANDARD SHIFT', 70, 525);
+    ctx.fillStyle = '#0f172a';
+    ctx.font = 'bold 18px monospace';
+    ctx.fillText(shift, 70, 555);
+
+    ctx.fillStyle = '#64748b';
+    ctx.font = 'bold 14px -apple-system, sans-serif';
+    ctx.fillText('EMAIL ADDRESS', 420, 525);
+    ctx.fillStyle = '#0f172a';
+    ctx.font = 'bold 18px -apple-system, sans-serif';
+    ctx.fillText(email, 420, 555);
+
+    // Barcode Container Box
+    ctx.fillStyle = '#ffffff';
+    ctx.strokeStyle = '#cbd5e1';
+    ctx.fillRect(40, 660, 720, 160);
+    ctx.strokeRect(40, 660, 720, 160);
+
+    // Render Barcode
+    var cleanId = eId.replace('ID: ', '');
+    ctx.fillStyle = '#0f172a';
+    var hash = 0;
+    for (var i = 0; i < cleanId.length; i++) hash = cleanId.charCodeAt(i) + ((hash << 5) - hash);
+    var x = 120;
+    for (var j = 0; j < 60; j++) {
+        var w = (Math.abs(hash + j * 7) % 5) + 2;
+        ctx.fillRect(x, 680, w, 80);
+        x += w + 4;
+    }
+
+    ctx.fillStyle = '#0f172a';
+    ctx.font = 'bold 22px monospace';
+    ctx.fillText('*' + cleanId + '*', 320, 795);
+
+    // Instructions Box
+    ctx.fillStyle = '#f1f5f9';
+    ctx.fillRect(40, 840, 720, 100);
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(40, 840, 10, 100);
+
+    ctx.fillStyle = '#475569';
+    ctx.font = '15px -apple-system, sans-serif';
+    ctx.fillText('Staff Instructions: Present this barcode ID at any Sportedia Kiosk terminal for', 65, 875);
+    ctx.fillText('automated check-in & check-out. Credentials are strictly confidential.', 65, 905);
+
+    // Trigger Download
+    var link = document.createElement('a');
+    link.download = 'Sportedia_Employee_Card_' + cleanId + '.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+}
+
+function renderEmpBarcodeLines(containerId, text) {
+    var $box = jQuery('#' + containerId).empty();
+    var hash = 0;
+    for (var i = 0; i < text.length; i++) hash = text.charCodeAt(i) + ((hash << 5) - hash);
+    for (var j = 0; j < 32; j++) {
+        var w = (Math.abs(hash + j * 7) % 4) + 1;
+        $box.append(jQuery('<div>').css({ background: '#0f172a', width: w + 'px', height: '100%', borderRadius: '1px' }));
+    }
+}
+
+function viewEmpCard(u) {
+    var name     = u.name || 'Employee Name';
+    var empId    = u.employee_id || 'EMP001';
+    var role     = u.role || 'Staff Officer';
+    var phone    = u.phone || 'N/A';
+    var email    = u.email || 'staff@sportedia.online';
+    var status   = u.status || 'active';
+    var avatar   = u.avatar_url || '';
+    var shift    = (u.work_schedule && u.work_schedule.start && u.work_schedule.end) ? (u.work_schedule.start + ' - ' + u.work_schedule.end) : '09:00 - 17:00';
+
+    jQuery('#emp_card_name').text(name);
+    jQuery('#emp_card_id').text('ID: ' + empId);
+    jQuery('#emp_card_role_text').text(role);
+    jQuery('#emp_card_role_badge').text(role.length > 15 ? role.substring(0, 15) + '...' : role);
+    jQuery('#emp_card_phone').text(phone);
+    jQuery('#emp_card_email').text(email);
+    jQuery('#emp_card_shift').text(shift);
+
+    if (avatar) {
+        jQuery('#emp_card_avatar_img').attr('src', avatar).show();
+        jQuery('#emp_card_avatar_initial').hide();
+    } else {
+        jQuery('#emp_card_avatar_img').hide();
+        jQuery('#emp_card_avatar_initial').text(name.charAt(0).toUpperCase()).show();
+    }
+
+    jQuery('#emp_card_status_badge').text(status.toUpperCase() + ' STAFF')
+        .attr('class', 'sp-badge ' + (status === 'active' ? 'sp-badge-active' : 'sp-badge-inactive'));
+
+    jQuery('#emp_card_barcode_text').text('*' + empId + '*');
+    renderEmpBarcodeLines('emp_card_barcode_lines', empId);
+
+    var cleanPhone = phone.replace(/[^0-9]/g, '');
+    var waText = encodeURIComponent("Hello " + name + ",\n\nHere is your Sportedia Official Employee Credentials ID Card:\nID: " + empId + "\nRole: " + role + "\nShift: " + shift + "\nStatus: " + status + "\n\nInstructions: Present this barcode at any Sportedia Kiosk for check-in/out. Credentials are non-transferable and strictly confidential.");
+    jQuery('#emp_card_whatsapp_link').attr('href', 'https://api.whatsapp.com/send?phone=' + cleanPhone + '&text=' + waText);
+
+    spOpenModal('spEmpCardModal');
+}
+
 function openUserModal() {
     jQuery('#spUserModalTitle').text('Add System User');
     jQuery('#sp_user_id').val('0');

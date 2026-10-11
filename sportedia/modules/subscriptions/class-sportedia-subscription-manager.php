@@ -17,6 +17,39 @@ class Sportedia_Subscription_Manager {
         add_action('wp_ajax_sportedia_verify_member_session', array($this, 'ajax_verify_member_session'));
         add_action('wp_ajax_nopriv_sportedia_verify_member_session', array($this, 'ajax_verify_member_session'));
         add_action('wp_ajax_sportedia_search_subscriptions', array($this, 'ajax_search_subscriptions'));
+        add_action('wp_ajax_sportedia_upload_card_image', array($this, 'ajax_upload_card_image'));
+        add_action('wp_ajax_nopriv_sportedia_upload_card_image', array($this, 'ajax_upload_card_image'));
+    }
+
+    public function ajax_upload_card_image() {
+        check_ajax_referer('sportedia_nonce', 'nonce');
+
+        $image_data = isset($_POST['image_data']) ? $_POST['image_data'] : '';
+        if (empty($image_data)) {
+            wp_send_json_error('No image data received.');
+        }
+
+        if (preg_match('/^data:image\/(png|jpeg);base64,/', $image_data, $type)) {
+            $image_data = substr($image_data, strpos($image_data, ',') + 1);
+            $ext = strtolower($type[1]);
+            $decoded = base64_decode($image_data);
+            if ($decoded === false) {
+                wp_send_json_error('Base64 decoding failed.');
+            }
+        } else {
+            wp_send_json_error('Invalid image data format.');
+        }
+
+        $upload_dir = wp_upload_dir();
+        $filename = 'sp_card_' . time() . '_' . rand(1000, 9999) . '.' . $ext;
+        $file_path = $upload_dir['path'] . '/' . $filename;
+
+        if (file_put_contents($file_path, $decoded) !== false) {
+            $file_url = $upload_dir['url'] . '/' . $filename;
+            wp_send_json_success(array('image_url' => $file_url));
+        } else {
+            wp_send_json_error('Failed to save image file.');
+        }
     }
 
     public function ajax_search_subscriptions() {

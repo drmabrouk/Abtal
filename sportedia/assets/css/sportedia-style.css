@@ -2,9 +2,14 @@
 
 :root {
   --sp-primary: #000000;
+  --sp-brand-red: #C02030;
+  --sp-brand-navy: #2B3245;
+  --sp-brand-green: #3E8E41;
+  --sp-brand-grey: #F2F4F7;
+  --sp-brand-dark: #1E2025;
   --sp-bg-main: #f8f9fa;
   --sp-bg-card: #ffffff;
-  --sp-text-main: #111827;
+  --sp-text-main: #1E2025;
   --sp-text-muted: #6b7280;
   --sp-border-color: #e5e7eb;
   --sp-border-hover: #d1d5db;

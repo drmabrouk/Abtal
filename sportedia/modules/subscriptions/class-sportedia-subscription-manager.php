@@ -144,13 +144,15 @@ class Sportedia_Subscription_Manager {
                 }
             }
 
-            $row['member_name']  = $user_name;
-            $row['employee_id']  = $emp_id;
-            $row['member_phone'] = $user_phone;
-            $row['member_dob']   = $user_dob ? $user_dob : 'N/A';
-            $row['coach_name']   = $coach_name;
-            $row['branch_name']  = $branch_name;
-            $subscriptions[]     = $row;
+            $row['member_name']   = $user_name;
+            $row['employee_id']   = $emp_id;
+            $row['member_phone']  = $user_phone;
+            $row['member_dob']    = $user_dob ? $user_dob : 'N/A';
+            $row['member_avatar'] = get_user_meta($row['user_id'], 'sportedia_avatar', true);
+            $row['member_email']  = $user ? $user->user_email : '';
+            $row['coach_name']    = $coach_name;
+            $row['branch_name']   = $branch_name;
+            $subscriptions[]      = $row;
         }
 
         return $subscriptions;
@@ -306,6 +308,8 @@ class Sportedia_Subscription_Manager {
             'member_phone'   => $member_phone,
             'member_dob'     => !empty($member_dob) ? $member_dob : 'N/A',
             'member_id'      => $member_id,
+            'member_avatar'  => get_user_meta($user_id, 'sportedia_avatar', true),
+            'member_email'   => !empty($member_email) ? $member_email : ($existing_user ? $existing_user->user_email : ''),
             'branch_name'    => $branch_name,
             'coach_name'     => $coach_name,
             'plan_name'      => $plan_name,

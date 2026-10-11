@@ -17,6 +17,8 @@ class Sportedia_Attendance_Manager {
         add_action('wp_ajax_sportedia_get_kiosk_qr', array($this, 'ajax_get_kiosk_qr'));
         add_action('wp_ajax_nopriv_sportedia_get_kiosk_qr', array($this, 'ajax_get_kiosk_qr'));
         add_action('wp_ajax_sportedia_process_employee_scan', array($this, 'ajax_process_employee_scan'));
+        add_action('wp_ajax_sportedia_process_kiosk_barcode_scan', array($this, 'ajax_process_kiosk_barcode_scan'));
+        add_action('wp_ajax_nopriv_sportedia_process_kiosk_barcode_scan', array($this, 'ajax_process_kiosk_barcode_scan'));
         add_action('wp_ajax_sportedia_get_payroll_report', array($this, 'ajax_get_payroll_report'));
         add_action('wp_ajax_sportedia_search_attendance', array($this, 'ajax_search_attendance'));
     }
@@ -315,6 +317,216 @@ class Sportedia_Attendance_Manager {
             'remaining_allowance' => $remaining_allowance,
             'total_working_hours' => round($total_working_mins / 60, 2),
         );
+    }
+
+    public function ajax_process_kiosk_barcode_scan() {
+        check_ajax_referer('sportedia_nonce', 'nonce');
+
+        $raw_barcode = isset($_POST['barcode']) ? sanitize_text_field($_POST['barcode']) : '';
+        $barcode = trim($raw_barcode, " *\t\n\r\0\x0B");
+
+        if (empty($barcode)) {
+            wp_send_json_error('Please scan or enter a valid Barcode ID.');
+        }
+
+        // Search user by sportedia_employee_id, sportedia_phone, login, email, or ID
+        $users = get_users(array(
+            'meta_key'   => 'sportedia_employee_id',
+            'meta_value' => $barcode,
+            'number'     => 1,
+        ));
+
+        if (empty($users)) {
+            $users = get_users(array(
+                'meta_key'   => 'sportedia_phone',
+                'meta_value' => $barcode,
+                'number'     => 1,
+            ));
+        }
+
+        if (empty($users)) {
+            $user_obj = get_user_by('login', $barcode);
+            if (!$user_obj) $user_obj = get_user_by('email', $barcode);
+            if (!$user_obj && is_numeric($barcode)) $user_obj = get_user_by('id', intval($barcode));
+            if ($user_obj) $users = array($user_obj);
+        }
+
+        if (empty($users)) {
+            wp_send_json_error('No account found matching Barcode ID: ' . $barcode);
+        }
+
+        $scanned_user = $users[0];
+        $user_id = $scanned_user->ID;
+        $roles = (array) $scanned_user->roles;
+
+        $staff_roles = array(
+            'administrator', 'sportedia_sys_admin', 'sportedia_general_mgr',
+            'sportedia_facility_mgr', 'sportedia_ops_mgr', 'sportedia_booking_mgr',
+            'sportedia_coach', 'sportedia_hr_officer', 'sportedia_finance_mgr'
+        );
+
+        $is_staff = false;
+        foreach ($roles as $r) {
+            if (in_array($r, $staff_roles, true)) {
+                $is_staff = true;
+                break;
+            }
+        }
+
+        global $wpdb;
+        $today = date('Y-m-d');
+        $now = date('Y-m-d H:i:s');
+
+        if ($is_staff) {
+            // Process Employee Attendance Check-in / Check-out
+            $table = $wpdb->prefix . 'sportedia_attendance';
+            $user_branches = Sportedia_User_Manager::get_user_branches($user_id);
+            $branch_id = !empty($user_branches) ? intval(reset($user_branches)) : 0;
+
+            $existing = $wpdb->get_row($wpdb->prepare(
+                "SELECT * FROM $table WHERE user_id = %d AND attendance_date = %s ORDER BY id DESC LIMIT 1",
+                $user_id, $today
+            ), ARRAY_A);
+
+            $threshold_mins = intval(Sportedia_Settings_Manager::get_setting('checkout_threshold_minutes', '30'));
+            if ($threshold_mins <= 0) $threshold_mins = 30;
+
+            if ($existing) {
+                $check_in_time = strtotime($existing['check_in_time'] ? $existing['check_in_time'] : $existing['created_at']);
+                $diff_mins = floor((time() - $check_in_time) / 60);
+
+                if ($diff_mins < $threshold_mins) {
+                    wp_send_json_success(array(
+                        'type'        => 'employee_duplicate',
+                        'user_type'   => 'employee',
+                        'name'        => $scanned_user->display_name,
+                        'employee_id' => get_user_meta($user_id, 'sportedia_employee_id', true),
+                        'message'     => 'Staff attendance for ' . $scanned_user->display_name . ' already recorded today.'
+                    ));
+                } else {
+                    $work_duration = floor((time() - $check_in_time) / 60);
+                    $wpdb->update($table, array(
+                        'check_out_time'           => $now,
+                        'working_duration_minutes' => $work_duration
+                    ), array('id' => $existing['id']));
+
+                    $hrs = floor($work_duration / 60);
+                    $mins = $work_duration % 60;
+                    $dur_str = ($hrs > 0 ? $hrs . ' hrs ' : '') . $mins . ' mins';
+
+                    Sportedia_DB::log_activity('kiosk_employee_checkout', 'Check-out recorded for staff ' . $scanned_user->display_name, $user_id);
+
+                    wp_send_json_success(array(
+                        'type'        => 'employee_checkout',
+                        'user_type'   => 'employee',
+                        'name'        => $scanned_user->display_name,
+                        'employee_id' => get_user_meta($user_id, 'sportedia_employee_id', true),
+                        'message'     => 'Staff Check-out recorded for ' . $scanned_user->display_name . '. Working duration: ' . $dur_str . '.'
+                    ));
+                }
+            } else {
+                $schedule = get_user_meta($user_id, 'sportedia_work_schedule', true);
+                $shift_start = !empty($schedule['start']) ? $schedule['start'] : '09:00';
+                $shift_end   = !empty($schedule['end']) ? $schedule['end'] : '17:00';
+
+                $scheduled_start_ts = strtotime($today . ' ' . $shift_start);
+                $actual_check_in_ts = time();
+
+                $lateness_mins = 0;
+                $status = 'present';
+
+                if ($actual_check_in_ts > $scheduled_start_ts) {
+                    $lateness_mins = floor(($actual_check_in_ts - $scheduled_start_ts) / 60);
+                    if ($lateness_mins > 0) {
+                        $status = 'late';
+                    }
+                }
+
+                $wpdb->insert($table, array(
+                    'branch_id'                => $branch_id,
+                    'program_id'               => 0,
+                    'user_id'                  => $user_id,
+                    'user_type'                => 'employee',
+                    'attendance_date'          => $today,
+                    'check_in_time'            => $now,
+                    'scheduled_start'          => $shift_start,
+                    'scheduled_end'            => $shift_end,
+                    'lateness_minutes'         => $lateness_mins,
+                    'working_duration_minutes' => 0,
+                    'status'                   => $status,
+                    'checked_in_by'            => $user_id
+                ));
+
+                $late_msg = $lateness_mins > 0 ? ' (' . $lateness_mins . ' mins late)' : '';
+                Sportedia_DB::log_activity('kiosk_employee_checkin', 'Check-in recorded for staff ' . $scanned_user->display_name . $late_msg, $user_id);
+
+                wp_send_json_success(array(
+                    'type'        => 'employee_checkin',
+                    'user_type'   => 'employee',
+                    'name'        => $scanned_user->display_name,
+                    'employee_id' => get_user_meta($user_id, 'sportedia_employee_id', true),
+                    'message'     => 'Staff Check-in recorded for ' . $scanned_user->display_name . ' at ' . date('H:i') . $late_msg . '.'
+                ));
+            }
+        } else {
+            // Process Member / Subscriber Session Attendance
+            Sportedia_Subscription_Manager::auto_update_expired_subscriptions();
+            $subs_table = $wpdb->prefix . 'sportedia_subscriptions';
+            $att_table  = $wpdb->prefix . 'sportedia_attendance';
+
+            $sub = $wpdb->get_row($wpdb->prepare(
+                "SELECT * FROM $subs_table WHERE user_id = %d AND status = 'active' AND start_date <= %s AND end_date >= %s ORDER BY id DESC LIMIT 1",
+                $user_id, $today, $today
+            ), ARRAY_A);
+
+            if (!$sub) {
+                wp_send_json_error('No active subscription found or plan expired for member: ' . $scanned_user->display_name);
+            }
+
+            $total_sessions = intval($sub['sessions_count']);
+            if ($total_sessions <= 0) $total_sessions = 12;
+
+            $used_sessions  = intval($sub['sessions_used']);
+            $remaining      = $total_sessions - $used_sessions;
+
+            if ($remaining <= 0) {
+                wp_send_json_error('No sessions remaining for member: ' . $scanned_user->display_name);
+            }
+
+            $new_used = $used_sessions + 1;
+            $new_remaining = $total_sessions - $new_used;
+
+            $update_data = array('sessions_used' => $new_used);
+            if ($new_remaining <= 0) {
+                $update_data['status'] = 'completed';
+            }
+
+            $wpdb->update($subs_table, $update_data, array('id' => $sub['id']));
+
+            $wpdb->insert($att_table, array(
+                'branch_id'       => intval($sub['branch_id']),
+                'program_id'      => intval($sub['program_id']),
+                'user_id'         => $user_id,
+                'user_type'       => 'customer',
+                'attendance_date' => $today,
+                'check_in_time'   => $now,
+                'status'          => 'present',
+                'checked_in_by'   => 0
+            ));
+
+            $emp_id = get_user_meta($user_id, 'sportedia_employee_id', true);
+            Sportedia_DB::log_activity('kiosk_member_verified', 'Session verified for subscriber ' . $scanned_user->display_name . ' (' . $emp_id . '). Remaining: ' . $new_remaining, $user_id);
+
+            wp_send_json_success(array(
+                'type'               => 'member_session',
+                'user_type'          => 'customer',
+                'name'               => $scanned_user->display_name,
+                'employee_id'        => $emp_id,
+                'plan_name'          => $sub['plan_name'],
+                'sessions_remaining' => $new_remaining,
+                'message'            => 'Member Session verified for ' . $scanned_user->display_name . ' (' . $sub['plan_name'] . '). Remaining: ' . $new_remaining . ' sessions.'
+            ));
+        }
     }
 
     public function ajax_process_employee_scan() {

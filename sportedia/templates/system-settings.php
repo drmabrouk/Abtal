@@ -74,6 +74,20 @@ $timezones_list = array(
         <?php if ($active_tab === 'branding') : ?>
             <h3 style="margin-top:0;">System Branding & General Info</h3>
 
+            <!-- System Logo Upload & Display Section -->
+            <div style="margin-bottom: 20px; border: 1px dashed var(--sp-border-color); padding: 16px; border-radius: var(--sp-radius); background: #f9fafb;">
+                <label style="font-size: 13px; font-weight: 700; display: block; margin-bottom: 8px;">System Logo Branding</label>
+                <p style="font-size: 11px; color: var(--sp-text-muted); margin: 0 0 12px 0;">Upload a system logo. It will automatically appear across all generated subscriber cards, ID badges, kiosk headers, and invoices.</p>
+                <?php if (!empty($system_logo)) : ?>
+                    <div style="margin-bottom: 12px; display: flex; align-items: center; gap: 12px; background: #ffffff; padding: 10px; border-radius: 8px; border: 1px solid var(--sp-border-color);">
+                        <img src="<?php echo esc_url($system_logo); ?>" style="max-height: 50px; max-width: 150px; object-fit: contain;">
+                        <span style="font-size: 12px; color: #16a34a; font-weight: 600;">Current System Logo Active</span>
+                    </div>
+                <?php endif; ?>
+                <input type="file" id="system_logo_file" name="system_logo_file" accept="image/*" style="font-size: 12px;">
+                <input type="hidden" name="settings[system_logo]" value="<?php echo esc_attr($system_logo); ?>">
+            </div>
+
             <div class="sp-form-group">
                 <input type="text" id="setting_site_name" name="settings[site_name]" class="sp-floating-input" value="<?php echo esc_attr($site_name); ?>" required>
                 <label for="setting_site_name" class="sp-floating-label">System Name *</label>
@@ -214,13 +228,23 @@ $timezones_list = array(
 <script>
 jQuery('#spSettingsForm').on('submit', function(e) {
     e.preventDefault();
-    var formData = jQuery(this).serialize() + '&action=sportedia_save_settings&nonce=' + sportedia_vars.nonce;
-    jQuery.post(sportedia_vars.ajax_url, formData, function(response) {
-        if (response.success) {
-            alert(response.data);
-            location.reload();
-        } else {
-            alert(response.data || 'Failed to save settings.');
+    var formData = new FormData(this);
+    formData.append('action', 'sportedia_save_settings');
+    formData.append('nonce', sportedia_vars.nonce);
+
+    jQuery.ajax({
+        url: sportedia_vars.ajax_url,
+        type: 'POST',
+        data: formData,
+        contentType: false,
+        processData: false,
+        success: function(response) {
+            if (response.success) {
+                alert(response.data);
+                location.reload();
+            } else {
+                alert(response.data || 'Failed to save settings.');
+            }
         }
     });
 });

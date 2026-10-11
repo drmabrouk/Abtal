@@ -96,9 +96,13 @@ class Sportedia_Import_Export {
                 fputcsv($output, array($b['id'], $b['branch_name'], $b['code'], $b['phone'], $b['email'], $b['status']));
             }
         } else if ($type === 'subscriptions') {
-            fputcsv($output, array('Sub ID', 'Invoice No', 'Member', 'Employee ID', 'Plan Name', 'Type', 'Start Date', 'End Date', 'Price', 'Status'));
+            fputcsv($output, array('Sub ID', 'Invoice No', 'Member', 'Employee ID', 'Plan Name', 'Type', 'Start Date', 'End Date', 'Price', 'Status', 'WhatsApp ID Card Dispatch Link'));
             $subs = Sportedia_Subscription_Manager::get_subscriptions($search, $branch_filter, $status_filter);
             foreach ($subs as $s) {
+                $clean_phone = preg_replace('/[^0-9]/', '', $s['member_phone']);
+                $wa_text = rawurlencode("Hello " . $s['member_name'] . ",\n\nHere is your Sportedia Digital Subscriber ID Card:\nMember ID: " . $s['employee_id'] . "\nPlan: " . $s['plan_name'] . "\nValidity: " . $s['start_date'] . " to " . $s['end_date'] . "\nStatus: " . ucfirst($s['status']));
+                $wa_dispatch = !empty($clean_phone) ? ("https://api.whatsapp.com/send?phone=" . $clean_phone . "&text=" . $wa_text) : 'N/A';
+
                 fputcsv($output, array(
                     $s['id'],
                     $s['invoice_number'],
@@ -109,7 +113,8 @@ class Sportedia_Import_Export {
                     $s['start_date'],
                     $s['end_date'],
                     $s['price'],
-                    $s['status']
+                    $s['status'],
+                    $wa_dispatch
                 ));
             }
         } else if ($type === 'attendance') {
@@ -133,10 +138,14 @@ class Sportedia_Import_Export {
                 ));
             }
         } else {
-            fputcsv($output, array('User ID', 'Employee ID', 'Name', 'Email', 'Phone', 'Role', 'Status'));
+            fputcsv($output, array('User ID', 'Employee ID', 'Name', 'Email', 'Phone', 'Role', 'Status', 'WhatsApp ID Card Dispatch Link'));
             $users = Sportedia_User_Manager::get_users($search, $role_filter, $branch_filter);
             foreach ($users as $u) {
-                fputcsv($output, array($u['id'], $u['employee_id'], $u['name'], $u['email'], $u['phone'], $u['role'], $u['status']));
+                $clean_phone = preg_replace('/[^0-9]/', '', $u['phone']);
+                $wa_text = rawurlencode("Hello " . $u['name'] . ",\n\nWelcome to Sportedia! Here is your Digital ID Card:\nID: " . $u['employee_id'] . "\nRole: " . $u['role'] . "\nStatus: " . ucfirst($u['status']));
+                $wa_dispatch = !empty($clean_phone) ? ("https://api.whatsapp.com/send?phone=" . $clean_phone . "&text=" . $wa_text) : 'N/A';
+
+                fputcsv($output, array($u['id'], $u['employee_id'], $u['name'], $u['email'], $u['phone'], $u['role'], $u['status'], $wa_dispatch));
             }
         }
 
@@ -177,6 +186,7 @@ class Sportedia_Import_Export {
         $imported_count = 0;
         $skipped_count  = 0;
         $invalid_count  = 0;
+        $dispatch_cards = array();
 
         while (($row = fgetcsv($handle)) !== false) {
             if (count($row) >= 3) {
@@ -184,6 +194,7 @@ class Sportedia_Import_Export {
                 $name         = sanitize_text_field($row[1]);
                 $email        = sanitize_email($row[2]);
                 $role         = isset($row[3]) ? sanitize_text_field($row[3]) : 'sportedia_customer';
+                $phone        = isset($row[4]) ? sanitize_text_field($row[4]) : '';
 
                 if (empty($name) || empty($email)) {
                     $invalid_count++;
@@ -223,6 +234,21 @@ class Sportedia_Import_Export {
                     }
                     update_user_meta($user_id, 'sportedia_employee_id', $employee_id);
                     update_user_meta($user_id, 'sportedia_status', 'active');
+                    if (!empty($phone)) {
+                        update_user_meta($user_id, 'sportedia_phone', $phone);
+                    }
+
+                    $clean_phone = preg_replace('/[^0-9]/', '', $phone);
+                    $wa_text = rawurlencode("Hello " . $name . ",\n\nWelcome to Sportedia! Here is your Official Digital ID Card:\nMember ID: " . $employee_id . "\nEmail: " . $email);
+                    $wa_url = !empty($clean_phone) ? ("https://api.whatsapp.com/send?phone=" . $clean_phone . "&text=" . $wa_text) : '#';
+
+                    $dispatch_cards[] = array(
+                        'name'         => $name,
+                        'employee_id'  => $employee_id,
+                        'phone'        => $phone,
+                        'whatsapp_url' => $wa_url
+                    );
+
                     $imported_count++;
                 } else {
                     $invalid_count++;
@@ -233,9 +259,13 @@ class Sportedia_Import_Export {
         }
 
         fclose($handle);
-        Sportedia_DB::log_activity('csv_import', 'Imported ' . $imported_count . ' users via CSV.');
+        Sportedia_DB::log_activity('csv_import', 'Imported ' . $imported_count . ' users via CSV with digital ID card dispatch links generated.');
 
-        $msg = sprintf('Import Complete: %d imported successfully, %d skipped (duplicates), %d invalid rows.', $imported_count, $skipped_count, $invalid_count);
-        wp_send_json_success($msg);
+        $msg = sprintf('Import Complete: %d imported successfully, %d skipped (duplicates), %d invalid rows. Automated digital ID cards generated for instant dispatch.', $imported_count, $skipped_count, $invalid_count);
+        wp_send_json_success(array(
+            'message'        => $msg,
+            'imported_count' => $imported_count,
+            'dispatch_cards' => $dispatch_cards
+        ));
     }
 }

@@ -11,6 +11,54 @@ class Sportedia_User_Manager {
         return self::$instance;
     }
 
+    public static function get_branch_prefix($branch_id = 0) {
+        global $wpdb;
+        $prefix = 'EMP';
+        if ($branch_id > 0) {
+            $table = $wpdb->prefix . 'sportedia_branches';
+            $branch = $wpdb->get_row($wpdb->prepare("SELECT code, branch_name FROM $table WHERE id = %d", $branch_id));
+            if ($branch) {
+                if (!empty($branch->code)) {
+                    $clean = preg_replace('/[^A-Za-z]/', '', $branch->code);
+                    if (!empty($clean)) {
+                        $prefix = strtoupper(substr($clean, 0, 3));
+                    }
+                } else if (!empty($branch->branch_name)) {
+                    $clean = preg_replace('/[^A-Za-z]/', '', $branch->branch_name);
+                    if (!empty($clean)) {
+                        $prefix = strtoupper(substr($clean, 0, 3));
+                    }
+                }
+            }
+        }
+        return str_pad(strtoupper(substr($prefix, 0, 3)), 3, 'X');
+    }
+
+    public static function get_next_employee_id($branch_id = 0) {
+        global $wpdb;
+        $prefix = self::get_branch_prefix($branch_id);
+
+        $meta_values = $wpdb->get_col("SELECT meta_value FROM {$wpdb->usermeta} WHERE meta_key = 'sportedia_employee_id'");
+
+        $max_seq = 0;
+        if (!empty($meta_values)) {
+            foreach ($meta_values as $val) {
+                if (strpos($val, $prefix) === 0) {
+                    $num_part = substr($val, strlen($prefix));
+                    if (is_numeric($num_part)) {
+                        $seq = intval($num_part);
+                        if ($seq > $max_seq) {
+                            $max_seq = $seq;
+                        }
+                    }
+                }
+            }
+        }
+
+        $next_seq = $max_seq + 1;
+        return $prefix . str_pad($next_seq, 3, '0', STR_PAD_LEFT);
+    }
+
     public static function get_next_member_id($prefix = '') {
         global $wpdb;
         $current_year = date('Y');
@@ -64,6 +112,14 @@ class Sportedia_User_Manager {
         add_action('wp_ajax_sportedia_upload_avatar', array($this, 'ajax_upload_avatar'));
         add_action('wp_ajax_sportedia_update_my_profile', array($this, 'ajax_update_my_profile'));
         add_action('wp_ajax_sportedia_search_users', array($this, 'ajax_search_users'));
+        add_action('wp_ajax_sportedia_get_next_employee_id', array($this, 'ajax_get_next_employee_id'));
+    }
+
+    public function ajax_get_next_employee_id() {
+        check_ajax_referer('sportedia_nonce', 'nonce');
+        $branch_id = isset($_POST['branch_id']) ? intval($_POST['branch_id']) : 0;
+        $code = self::get_next_employee_id($branch_id);
+        wp_send_json_success(array('employee_id' => $code));
     }
 
     public function ajax_search_users() {
@@ -278,7 +334,8 @@ class Sportedia_User_Manager {
         } else {
             // Create New User
             if (empty($employee_id)) {
-                wp_send_json_error('Employee ID is required.');
+                $primary_branch = !empty($branch_ids) ? intval(reset($branch_ids)) : 0;
+                $employee_id = self::get_next_employee_id($primary_branch);
             }
             if (empty($password)) {
                 wp_send_json_error('Password is required for new users.');

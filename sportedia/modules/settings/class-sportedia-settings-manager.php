@@ -66,9 +66,30 @@ class Sportedia_Settings_Manager {
                     Sportedia_DB::log_activity('reset_member_sequence', 'Administrator updated next member starting sequence to ' . sanitize_text_field($val));
                 }
             }
-            wp_send_json_success('System settings saved successfully.');
         }
 
-        wp_send_json_error('No settings provided.');
+        // Handle System Logo Upload
+        if (!empty($_FILES['system_logo_file']['tmp_name'])) {
+            if ($_FILES['system_logo_file']['size'] > 3 * 1024 * 1024) {
+                wp_send_json_error('System logo photo exceeds 3 MB size limit.');
+            }
+            $file_type = wp_check_filetype($_FILES['system_logo_file']['name']);
+            $allowed_types = array('jpg', 'jpeg', 'png', 'webp', 'svg');
+            if (!in_array(strtolower($file_type['ext']), $allowed_types, true)) {
+                wp_send_json_error('Invalid image file format for logo. Allowed: JPG, PNG, WEBP, SVG.');
+            }
+            require_once(ABSPATH . 'wp-admin/includes/file.php');
+            require_once(ABSPATH . 'wp-admin/includes/media.php');
+            require_once(ABSPATH . 'wp-admin/includes/image.php');
+            $attachment_id = media_handle_upload('system_logo_file', 0);
+            if (!is_wp_error($attachment_id)) {
+                $url = wp_get_attachment_url($attachment_id);
+                self::update_setting('system_logo', $url);
+            } else {
+                wp_send_json_error($attachment_id->get_error_message());
+            }
+        }
+
+        wp_send_json_success('System settings saved successfully.');
     }
 }

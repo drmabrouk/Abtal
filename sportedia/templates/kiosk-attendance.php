@@ -5,6 +5,7 @@ $initial_token = Sportedia_Attendance_Manager::generate_attendance_qr_token();
 $ajax_url      = admin_url('admin-ajax.php');
 $nonce         = wp_create_nonce('sportedia_nonce');
 $current_user  = wp_get_current_user();
+$system_logo   = Sportedia_Settings_Manager::get_setting('system_logo', '');
 ?>
 <!DOCTYPE html>
 <html <?php language_attributes(); ?>>
@@ -205,10 +206,14 @@ $current_user  = wp_get_current_user();
 
 <div class="sp-kiosk-container">
     <div class="sp-kiosk-brand">
-        <div class="sp-kiosk-logo">S</div>
+        <?php if (!empty($system_logo)) : ?>
+            <img src="<?php echo esc_url($system_logo); ?>" style="max-height: 48px; max-width: 140px; object-fit: contain;">
+        <?php else : ?>
+            <div class="sp-kiosk-logo">S</div>
+        <?php endif; ?>
         <div style="text-align: left;">
             <div class="sp-kiosk-title">Sportedia</div>
-            <div class="sp-kiosk-subtitle" style="margin: 0;">Staff Attendance Kiosk</div>
+            <div class="sp-kiosk-subtitle" style="margin: 0;">Automated Kiosk & Attendance System</div>
         </div>
     </div>
 
@@ -222,18 +227,30 @@ $current_user  = wp_get_current_user();
     </div>
     <div id="spTimerText" class="sp-timer-label">Refreshing code in 5.0s</div>
 
-    <?php if (is_user_logged_in()) : ?>
-        <div class="sp-scan-section">
-            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 6px;">Logged in Staff: <?php echo esc_html($current_user->display_name); ?></label>
-            <button type="button" class="sp-btn" onclick="scanCurrentToken()">
-                Scan & Check In / Check Out
+    <!-- Barcode Scanner Field -->
+    <div class="sp-scan-section">
+        <label style="font-size: 12px; font-weight: 700; display: block; margin-bottom: 8px; text-transform: uppercase; color: var(--sp-primary);">
+            Barcode Scanner Ready
+        </label>
+        <div style="position: relative; margin-bottom: 10px;">
+            <input type="text" id="spKioskBarcodeInput" class="sp-input" placeholder="Scan Barcode ID (Employee / Subscriber)..." autocomplete="off" autofocus style="padding-right: 40px; font-family: monospace; font-size: 14px; font-weight: 600;">
+            <div style="position: absolute; right: 12px; top: 12px; color: #16a34a; font-size: 18px;" title="Scanner Active">&#x25CF;</div>
+        </div>
+        <button type="button" class="sp-btn" onclick="submitKioskBarcodeScan()">
+            Process Barcode Scan
+        </button>
+        <?php if (is_user_logged_in()) : ?>
+            <button type="button" class="sp-btn" onclick="scanCurrentToken()" style="margin-top: 8px; background: #374151;">
+                Quick Self Scan (<?php echo esc_html($current_user->display_name); ?>)
             </button>
-        </div>
-    <?php else : ?>
-        <div class="sp-scan-section">
-            <p style="font-size: 12px; color: var(--sp-muted); margin: 0; text-align: center;">Scan with your mobile device or log in to record attendance.</p>
-        </div>
-    <?php endif; ?>
+        <?php endif; ?>
+    </div>
+
+    <!-- Scan Results Card -->
+    <div id="spScanResultCard" style="display: none; margin-top: 16px; padding: 14px; border-radius: 8px; font-size: 13px; text-align: left;">
+        <strong id="scan_result_title" style="display: block; font-size: 14px; margin-bottom: 4px;"></strong>
+        <span id="scan_result_msg"></span>
+    </div>
 </div>
 
 <div id="spToast" class="sp-toast"></div>
@@ -303,6 +320,46 @@ function showToast(msg) {
     }, 4000);
 }
 
+function submitKioskBarcodeScan() {
+    var barcode = $('#spKioskBarcodeInput').val().trim();
+    if (!barcode) {
+        showToast('Please scan or enter a barcode.');
+        return;
+    }
+
+    $.ajax({
+        url: ajaxUrl,
+        type: 'POST',
+        data: {
+            action: 'sportedia_process_kiosk_barcode_scan',
+            nonce: nonce,
+            barcode: barcode
+        },
+        success: function(res) {
+            $('#spKioskBarcodeInput').val('').focus();
+            if (res.success) {
+                var d = res.data;
+                showToast(d.message || 'Scan processed successfully!');
+                $('#scan_result_title').text(d.name + ' (' + d.employee_id + ')');
+                $('#scan_result_msg').text(d.message);
+                $('#spScanResultCard').css({ background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0' }).slideDown(200);
+            } else {
+                showToast(res.data || 'Scan failed.');
+                $('#scan_result_title').text('Scan Failed');
+                $('#scan_result_msg').text(res.data || 'Barcode not recognized.');
+                $('#spScanResultCard').css({ background: '#fef2f2', color: '#991b1b', border: '1px solid #fecaca' }).slideDown(200);
+            }
+            setTimeout(function() {
+                $('#spScanResultCard').slideUp(200);
+            }, 6000);
+        },
+        error: function() {
+            showToast('Network error during barcode processing.');
+            $('#spKioskBarcodeInput').val('').focus();
+        }
+    });
+}
+
 function scanCurrentToken() {
     $.ajax({
         url: ajaxUrl,
@@ -324,6 +381,25 @@ function scanCurrentToken() {
         }
     });
 }
+
+// Automatic Barcode Scanner Keystroke Listener
+$(document).ready(function() {
+    $('#spKioskBarcodeInput').focus();
+
+    // Auto focus lock
+    $(document).on('click', function(e) {
+        if (!$(e.target).is('input, select, textarea, button')) {
+            $('#spKioskBarcodeInput').focus();
+        }
+    });
+
+    $('#spKioskBarcodeInput').on('keypress', function(e) {
+        if (e.which === 13) {
+            e.preventDefault();
+            submitKioskBarcodeScan();
+        }
+    });
+});
 </script>
 </body>
 </html>

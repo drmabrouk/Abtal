@@ -9,6 +9,7 @@ $subscriptions = Sportedia_Subscription_Manager::get_subscriptions($search, $bra
 $branchesList  = Sportedia_Branch_Manager::get_branches();
 $usersList     = Sportedia_User_Manager::get_users();
 $programsList  = Sportedia_Program_Manager::get_programs();
+$system_logo   = Sportedia_Settings_Manager::get_setting('system_logo', '');
 
 $curr_u = wp_get_current_user();
 $admin_roles = array('sportedia_sys_admin', 'sportedia_general_mgr', 'sportedia_facility_mgr', 'sportedia_ops_mgr', 'sportedia_finance_mgr', 'administrator');
@@ -104,8 +105,14 @@ foreach ((array)$curr_u->roles as $r) {
                         <?php echo esc_html(ucfirst($s['status'])); ?>
                     </span>
 
+                    <?php
+                        $clean_phone = preg_replace('/[^0-9]/', '', $s['member_phone']);
+                        $wa_text = rawurlencode("Hello " . $s['member_name'] . ",\n\nHere is your Sportedia Digital Subscriber ID Card:\nMember ID: " . $s['employee_id'] . "\nPlan: " . $s['plan_name'] . "\nValidity: " . $s['start_date'] . " to " . $s['end_date'] . "\nStatus: " . ucfirst($s['status']));
+                        $wa_link = "https://api.whatsapp.com/send?phone=" . $clean_phone . "&text=" . $wa_text;
+                    ?>
                     <button class="sp-btn sp-btn-secondary sp-btn-sm" onclick='viewA5Invoice(<?php echo json_encode($s); ?>)' title="Print Invoice">Invoice</button>
                     <button class="sp-btn sp-btn-secondary sp-btn-sm" onclick='viewA6Card(<?php echo json_encode($s); ?>)' title="Membership Card">Card</button>
+                    <a href="<?php echo esc_url($wa_link); ?>" target="_blank" class="sp-btn sp-btn-secondary sp-btn-sm" style="color: #16a34a; border-color: #16a34a;" title="Share ID Card via WhatsApp">WhatsApp</a>
                     <button class="sp-btn sp-btn-secondary sp-btn-sm" onclick='editSub(<?php echo json_encode($s); ?>)'>Edit</button>
                     <button class="sp-btn sp-btn-secondary sp-btn-sm" style="color:#dc2626;" onclick="deleteSub(<?php echo $s['id']; ?>)">Delete</button>
                 </div>
@@ -421,67 +428,82 @@ foreach ((array)$curr_u->roles as $r) {
     </div>
 </div>
 
-<!-- Dedicated A6 Membership Card Printable Modal -->
+<!-- Dedicated Digital Subscriber Mobile Business Card Printable Modal -->
 <div id="spCardModal" class="sp-modal">
-    <div class="sp-modal-content" style="max-width: 420px; padding: 0; background: #ffffff; border-radius: 12px; overflow: hidden; border: 2px solid #000000;" id="spPrintableCardModal">
+    <div class="sp-modal-content" style="max-width: 440px; padding: 0; background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e5e7eb; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);" id="spPrintableCardModal">
         <div class="sp-modal-header sp-no-print" style="padding: 12px 16px; margin: 0; background: var(--sp-bg-main);">
-            <h3 class="sp-modal-title">A6 Membership Card Preview</h3>
+            <h3 class="sp-modal-title">Digital Mobile ID Business Card</h3>
             <button type="button" class="sp-modal-close" onclick="spCloseModal('spCardModal')">&times;</button>
         </div>
 
         <div id="spA6CardSheet">
-            <div style="background: #000000; color: #ffffff; padding: 18px 20px; display: flex; justify-content: space-between; align-items: center;">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <div style="width: 32px; height: 32px; background: #ffffff; color: #000000; font-weight: 800; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 16px;">S</div>
+            <!-- Digital Card Header Banner -->
+            <div style="background: linear-gradient(135deg, #000000 0%, #1f2937 100%); color: #ffffff; padding: 20px; display: flex; justify-content: space-between; align-items: center; position: relative;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div id="card_system_logo_box">
+                        <?php if (!empty($system_logo)) : ?>
+                            <img src="<?php echo esc_url($system_logo); ?>" style="max-height: 38px; max-width: 100px; object-fit: contain;">
+                        <?php else : ?>
+                            <div style="width: 36px; height: 36px; background: #ffffff; color: #000000; font-weight: 800; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px;">S</div>
+                        <?php endif; ?>
+                    </div>
                     <div>
-                        <strong style="font-size: 16px; display: block; letter-spacing: -0.5px;">Sportedia</strong>
-                        <span style="font-size: 10px; opacity: 0.8; text-transform: uppercase;">Official Membership Card</span>
+                        <strong style="font-size: 16px; display: block; letter-spacing: -0.3px;">Sportedia</strong>
+                        <span style="font-size: 10px; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.5px;">Digital ID Business Card</span>
                     </div>
                 </div>
-                <span id="card_branch_badge" style="font-size: 10px; background: rgba(255,255,255,0.2); padding: 4px 8px; border-radius: 4px;">Main Branch</span>
+                <span id="card_branch_badge" style="font-size: 11px; background: rgba(255,255,255,0.15); padding: 4px 10px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2);">Main Branch</span>
             </div>
 
-            <div style="padding: 20px; font-size: 13px;">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
-                    <div>
-                        <div style="font-size: 10px; color: var(--sp-text-muted); text-transform: uppercase;">Member Name</div>
-                        <strong id="card_member_name" style="font-size: 16px; color: #000000;">John Doe</strong>
+            <!-- Profile & Main Info Section -->
+            <div style="padding: 20px; font-family: 'Google Sans Flex', -apple-system, sans-serif;">
+                <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 18px;">
+                    <div id="card_avatar_box" style="width: 64px; height: 64px; border-radius: 50%; overflow: hidden; border: 2px solid #000000; background: #f3f4f6; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
+                        <span id="card_avatar_initial" style="font-size: 24px; font-weight: 700; color: #374151;">M</span>
+                        <img id="card_avatar_img" src="" style="width: 100%; height: 100%; object-fit: cover; display: none;">
                     </div>
-                    <div style="text-align: right;">
-                        <div style="font-size: 10px; color: var(--sp-text-muted); text-transform: uppercase;">Member ID</div>
-                        <strong id="card_member_id" style="font-size: 14px; font-family: monospace;">MEM-1001</strong>
-                    </div>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f8f9fa; padding: 12px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #e5e7eb;">
-                    <div>
-                        <span style="font-size: 10px; color: var(--sp-text-muted); display: block;">PROGRAM</span>
-                        <strong id="card_program" style="font-size: 12px; color: #000000;">Football Training</strong>
-                    </div>
-                    <div>
-                        <span style="font-size: 10px; color: var(--sp-text-muted); display: block;">ASSIGNED COACH</span>
-                        <strong id="card_coach" style="font-size: 12px; color: #000000;">Coach Alex</strong>
-                    </div>
-                    <div>
-                        <span style="font-size: 10px; color: var(--sp-text-muted); display: block;">START DATE</span>
-                        <span id="card_start_date" style="font-size: 12px; font-family: monospace;">2026-03-01</span>
-                    </div>
-                    <div>
-                        <span style="font-size: 10px; color: var(--sp-text-muted); display: block;">DATE OF BIRTH</span>
-                        <span id="card_dob" style="font-size: 12px;">1998-05-15</span>
+                    <div style="flex: 1;">
+                        <span id="card_status_badge" class="sp-badge sp-badge-active" style="display: inline-block; margin-bottom: 4px; font-size: 10px; padding: 2px 8px;">Active Subscriber</span>
+                        <h3 id="card_member_name" style="margin: 0; font-size: 18px; font-weight: 700; color: #111827;">John Doe</h3>
+                        <span id="card_member_id" style="font-size: 12px; font-family: monospace; color: #6b7280; display: block;">ID: MEM-1001</span>
                     </div>
                 </div>
 
-                <div style="text-align: center; border-top: 1px dashed #e5e7eb; padding-top: 12px;">
-                    <div id="card_barcode_lines" style="display: flex; justify-content: center; gap: 2px; height: 45px; margin-bottom: 6px;"></div>
-                    <span id="card_barcode_text" style="font-family: monospace; font-size: 12px; font-weight: 700; letter-spacing: 2px; color: #000000;">*MEM-1001*</span>
+                <!-- Business Details Grid -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f8fafc; padding: 14px; border-radius: 12px; margin-bottom: 16px; border: 1px solid #e2e8f0; font-size: 12px;">
+                    <div>
+                        <span style="font-size: 10px; color: #6b7280; display: block; text-transform: uppercase;">Subscription Plan</span>
+                        <strong id="card_program" style="font-size: 13px; color: #000000; display: block;">Football Training</strong>
+                    </div>
+                    <div>
+                        <span style="font-size: 10px; color: #6b7280; display: block; text-transform: uppercase;">Assigned Coach</span>
+                        <strong id="card_coach" style="font-size: 13px; color: #000000; display: block;">Coach Alex</strong>
+                    </div>
+                    <div>
+                        <span style="font-size: 10px; color: #6b7280; display: block; text-transform: uppercase;">Validity Period</span>
+                        <span id="card_validity_period" style="font-size: 11px; font-family: monospace; font-weight: 600;">2026-03-01 &rarr; 2026-03-31</span>
+                    </div>
+                    <div>
+                        <span style="font-size: 10px; color: #6b7280; display: block; text-transform: uppercase;">Mobile Number</span>
+                        <span id="card_phone" style="font-size: 11px; font-weight: 600;">+971 50 000 0000</span>
+                    </div>
+                </div>
+
+                <!-- Barcode & Scan Section -->
+                <div style="text-align: center; background: #ffffff; padding: 14px; border-radius: 12px; border: 1px dashed #cbd5e1;">
+                    <div id="card_barcode_lines" style="display: flex; justify-content: center; gap: 2px; height: 42px; margin-bottom: 6px;"></div>
+                    <span id="card_barcode_text" style="font-family: monospace; font-size: 13px; font-weight: 700; letter-spacing: 2px; color: #000000;">*MEM-1001*</span>
                 </div>
             </div>
         </div>
 
-        <div style="padding: 12px 20px; background: #f8f9fa; border-top: 1px solid #e5e7eb; display: flex; gap: 8px; justify-content: flex-end;" class="sp-no-print">
-            <button type="button" class="sp-btn sp-btn-secondary sp-btn-sm" onclick="window.print()">Print A6 Card</button>
-            <a id="card_whatsapp_link" href="#" target="_blank" class="sp-btn sp-btn-primary sp-btn-sm" style="background-color: #16a34a; border-color: #16a34a;">Share WhatsApp</a>
+        <!-- Footer Actions -->
+        <div style="padding: 12px 20px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; gap: 8px; justify-content: flex-end;" class="sp-no-print">
+            <button type="button" class="sp-btn sp-btn-secondary sp-btn-sm" onclick="window.print()">Print Card</button>
+            <a id="card_whatsapp_link" href="#" target="_blank" class="sp-btn sp-btn-primary sp-btn-sm" style="background-color: #16a34a; border-color: #16a34a; display: inline-flex; align-items: center; gap: 4px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l.399.635-1.157 4.225 4.323-1.135.578.342z"/></svg>
+                Share via WhatsApp
+            </a>
             <button type="button" class="sp-btn sp-btn-secondary sp-btn-sm" onclick="spCloseModal('spCardModal')">Close</button>
         </div>
     </div>
@@ -700,25 +722,39 @@ function viewA5Invoice(s) {
 function viewA6Card(s) {
     var mName = s.member_name || s.name || 'Member';
     var mId = s.employee_id || s.member_id || 'MEM-1001';
-    var mPhone = s.member_phone || s.phone || '';
-    var mDob = s.member_dob || s.dob || 'N/A';
+    var mPhone = s.member_phone || s.phone || 'N/A';
     var pName = s.plan_name || s.program_name || 'Training Program';
     var cName = s.coach_name || 'Assigned Coach';
     var bName = s.branch_name || 'Main Branch';
     var sDate = s.start_date || new Date().toISOString().split('T')[0];
+    var eDate = s.end_date || '';
+    var status = s.status || 'active';
+    var avatarUrl = s.member_avatar || '';
 
     jQuery('#card_member_name').text(mName);
-    jQuery('#card_member_id').text(mId);
+    jQuery('#card_member_id').text('ID: ' + mId);
     jQuery('#card_branch_badge').text(bName);
     jQuery('#card_program').text(pName);
     jQuery('#card_coach').text(cName);
-    jQuery('#card_start_date').text(sDate);
-    jQuery('#card_dob').text(mDob);
+    jQuery('#card_phone').text(mPhone);
+    jQuery('#card_validity_period').text(sDate + (eDate ? ' \u2192 ' + eDate : ''));
+
+    if (avatarUrl) {
+        jQuery('#card_avatar_img').attr('src', avatarUrl).show();
+        jQuery('#card_avatar_initial').hide();
+    } else {
+        jQuery('#card_avatar_img').hide();
+        jQuery('#card_avatar_initial').text(mName.charAt(0).toUpperCase()).show();
+    }
+
+    jQuery('#card_status_badge').text(status.toUpperCase() + ' SUBSCRIBER')
+        .attr('class', 'sp-badge ' + (status === 'active' ? 'sp-badge-active' : 'sp-badge-inactive'));
+
     jQuery('#card_barcode_text').text('*' + mId + '*');
     renderBarcodeLines('card_barcode_lines', mId);
 
     var cleanPhone = mPhone.replace(/[^0-9]/g, '');
-    var waText = encodeURIComponent("Hello " + mName + ",\n\nHere is your Sportedia Official Membership Card:\nMember ID: " + mId + "\nProgram: " + pName + "\nCoach: " + cName + "\nStart Date: " + sDate);
+    var waText = encodeURIComponent("Hello " + mName + ",\n\nHere is your Sportedia Official Digital Subscriber ID Card:\nMember ID: " + mId + "\nPlan: " + pName + "\nCoach: " + cName + "\nValidity: " + sDate + (eDate ? " to " + eDate : "") + "\nStatus: " + status);
     jQuery('#card_whatsapp_link').attr('href', 'https://api.whatsapp.com/send?phone=' + cleanPhone + '&text=' + waText);
 
     spOpenModal('spCardModal');

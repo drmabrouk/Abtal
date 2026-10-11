@@ -351,13 +351,9 @@ class Sportedia_Attendance_Manager {
             if ($user_obj) $users = array($user_obj);
         }
 
-        if (empty($users)) {
-            wp_send_json_error('No account found matching Barcode ID: ' . $barcode);
-        }
-
-        $scanned_user = $users[0];
-        $user_id = $scanned_user->ID;
-        $roles = (array) $scanned_user->roles;
+        global $wpdb;
+        $today = date('Y-m-d');
+        $now = date('Y-m-d H:i:s');
 
         $staff_roles = array(
             'administrator', 'sportedia_sys_admin', 'sportedia_general_mgr',
@@ -365,19 +361,20 @@ class Sportedia_Attendance_Manager {
             'sportedia_coach', 'sportedia_hr_officer', 'sportedia_finance_mgr'
         );
 
+        $scanned_user = !empty($users) ? $users[0] : null;
         $is_staff = false;
-        foreach ($roles as $r) {
-            if (in_array($r, $staff_roles, true)) {
-                $is_staff = true;
-                break;
+
+        if ($scanned_user) {
+            foreach ((array)$scanned_user->roles as $r) {
+                if (in_array($r, $staff_roles, true)) {
+                    $is_staff = true;
+                    break;
+                }
             }
         }
 
-        global $wpdb;
-        $today = date('Y-m-d');
-        $now = date('Y-m-d H:i:s');
-
-        if ($is_staff) {
+        if ($scanned_user && $is_staff) {
+            $user_id = $scanned_user->ID;
             // Process Employee Attendance Check-in / Check-out
             $table = $wpdb->prefix . 'sportedia_attendance';
             $user_branches = Sportedia_User_Manager::get_user_branches($user_id);
@@ -469,18 +466,33 @@ class Sportedia_Attendance_Manager {
                 ));
             }
         } else {
-            // Process Member / Subscriber Session Attendance
+            // Process Member / Subscriber Session Attendance directly from sportedia_subscriptions table
             Sportedia_Subscription_Manager::auto_update_expired_subscriptions();
             $subs_table = $wpdb->prefix . 'sportedia_subscriptions';
             $att_table  = $wpdb->prefix . 'sportedia_attendance';
 
+            $like = '%' . $wpdb->esc_like($barcode) . '%';
             $sub = $wpdb->get_row($wpdb->prepare(
-                "SELECT * FROM $subs_table WHERE user_id = %d AND status = 'active' AND start_date <= %s AND end_date >= %s ORDER BY id DESC LIMIT 1",
-                $user_id, $today, $today
+                "SELECT * FROM $subs_table WHERE status = 'active' AND start_date <= %s AND end_date >= %s AND (invoice_number = %s OR notes LIKE %s OR user_id = %d) ORDER BY id DESC LIMIT 1",
+                $today, $today, $barcode, $like, ($scanned_user ? $scanned_user->ID : 0)
             ), ARRAY_A);
 
             if (!$sub) {
-                wp_send_json_error('No active subscription found or plan expired for member: ' . $scanned_user->display_name);
+                wp_send_json_error('No active subscription found or plan expired for Barcode ID: ' . $barcode);
+            }
+
+            // Unpack subscriber profile
+            $decoded = json_decode($sub['notes'], true);
+            if (is_array($decoded) && isset($decoded['member_name'])) {
+                $sub_name = $decoded['member_name'];
+                $sub_empid = !empty($decoded['employee_id']) ? $decoded['employee_id'] : ('MEM-' . $sub['id']);
+            } else if ($scanned_user) {
+                $sub_name = $scanned_user->display_name;
+                $sub_empid = get_user_meta($scanned_user->ID, 'sportedia_employee_id', true);
+                if (empty($sub_empid)) $sub_empid = 'MEM-' . $scanned_user->ID;
+            } else {
+                $sub_name = 'Subscriber #' . $sub['id'];
+                $sub_empid = 'MEM-' . $sub['id'];
             }
 
             $total_sessions = intval($sub['sessions_count']);
@@ -490,7 +502,7 @@ class Sportedia_Attendance_Manager {
             $remaining      = $total_sessions - $used_sessions;
 
             if ($remaining <= 0) {
-                wp_send_json_error('No sessions remaining for member: ' . $scanned_user->display_name);
+                wp_send_json_error('No sessions remaining for subscriber: ' . $sub_name);
             }
 
             $new_used = $used_sessions + 1;
@@ -506,7 +518,7 @@ class Sportedia_Attendance_Manager {
             $wpdb->insert($att_table, array(
                 'branch_id'       => intval($sub['branch_id']),
                 'program_id'      => intval($sub['program_id']),
-                'user_id'         => $user_id,
+                'user_id'         => intval($sub['user_id']),
                 'user_type'       => 'customer',
                 'attendance_date' => $today,
                 'check_in_time'   => $now,
@@ -514,17 +526,16 @@ class Sportedia_Attendance_Manager {
                 'checked_in_by'   => 0
             ));
 
-            $emp_id = get_user_meta($user_id, 'sportedia_employee_id', true);
-            Sportedia_DB::log_activity('kiosk_member_verified', 'Session verified for subscriber ' . $scanned_user->display_name . ' (' . $emp_id . '). Remaining: ' . $new_remaining, $user_id);
+            Sportedia_DB::log_activity('kiosk_member_verified', 'Session verified for subscriber ' . $sub_name . ' (' . $sub_empid . '). Remaining: ' . $new_remaining, intval($sub['user_id']));
 
             wp_send_json_success(array(
                 'type'               => 'member_session',
                 'user_type'          => 'customer',
-                'name'               => $scanned_user->display_name,
-                'employee_id'        => $emp_id,
+                'name'               => $sub_name,
+                'employee_id'        => $sub_empid,
                 'plan_name'          => $sub['plan_name'],
                 'sessions_remaining' => $new_remaining,
-                'message'            => 'Member Session verified for ' . $scanned_user->display_name . ' (' . $sub['plan_name'] . '). Remaining: ' . $new_remaining . ' sessions.'
+                'message'            => 'Member Session verified for ' . $sub_name . ' (' . $sub['plan_name'] . '). Remaining: ' . $new_remaining . ' sessions.'
             ));
         }
     }

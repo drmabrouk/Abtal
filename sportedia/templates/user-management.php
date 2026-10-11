@@ -88,13 +88,7 @@ $system_logo       = Sportedia_Settings_Manager::get_setting('system_logo', '');
                         <?php echo esc_html(ucfirst($u['status'])); ?>
                     </span>
 
-                    <?php
-                        $clean_phone = preg_replace('/[^0-9]/', '', $u['phone']);
-                        $wa_text = rawurlencode("Hello " . $u['name'] . ",\n\nHere is your Sportedia Official Employee ID Card:\nID: " . $u['employee_id'] . "\nRole: " . $u['role'] . "\nStatus: " . ucfirst($u['status']) . "\n\nInstructions: Present your barcode at the attendance kiosk for staff check-in/check-out. Keep strictly confidential.");
-                        $wa_link = !empty($clean_phone) ? ("https://api.whatsapp.com/send?phone=" . $clean_phone . "&text=" . $wa_text) : '#';
-                    ?>
                     <button class="sp-btn sp-btn-secondary sp-btn-sm" onclick='viewEmpCard(<?php echo json_encode($u); ?>)'>ID Card</button>
-                    <a href="<?php echo esc_url($wa_link); ?>" target="_blank" class="sp-btn sp-btn-secondary sp-btn-sm" style="color: #16a34a; border-color: #16a34a;" title="Share ID Card via WhatsApp">WhatsApp</a>
                     <button class="sp-btn sp-btn-secondary sp-btn-sm" onclick='editUser(<?php echo json_encode($u); ?>)'>Edit Profile</button>
                     <button class="sp-btn sp-btn-secondary sp-btn-sm" style="color:#dc2626;" onclick="deleteUser(<?php echo $u['id']; ?>)">Delete</button>
                 </div>
@@ -138,7 +132,7 @@ $system_logo       = Sportedia_Settings_Manager::get_setting('system_logo', '');
             <!-- Profile & Main Info Section -->
             <div style="padding: 20px; font-family: 'Google Sans Flex', -apple-system, sans-serif;">
                 <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 18px;">
-                    <div style="width: 64px; height: 64px; border-radius: 50%; overflow: hidden; border: 2px solid #0f172a; background: #f1f5f9; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
+                    <div id="emp_card_avatar_box" style="width: 64px; height: 64px; border-radius: 50%; overflow: hidden; border: 2px solid #0f172a; background: #f1f5f9; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
                         <span id="emp_card_avatar_initial" style="font-size: 24px; font-weight: 700; color: #334155;">E</span>
                         <img id="emp_card_avatar_img" src="" style="width: 100%; height: 100%; object-fit: cover; display: none;">
                     </div>
@@ -547,9 +541,11 @@ function viewEmpCard(u) {
     if (avatar) {
         jQuery('#emp_card_avatar_img').attr('src', avatar).show();
         jQuery('#emp_card_avatar_initial').hide();
+        jQuery('#emp_card_avatar_box').css('display', 'flex').show();
     } else {
         jQuery('#emp_card_avatar_img').hide();
-        jQuery('#emp_card_avatar_initial').text(name.charAt(0).toUpperCase()).show();
+        jQuery('#emp_card_avatar_initial').hide();
+        jQuery('#emp_card_avatar_box').hide();
     }
 
     jQuery('#emp_card_status_badge').text(status.toUpperCase() + ' STAFF')

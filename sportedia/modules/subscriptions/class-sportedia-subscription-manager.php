@@ -116,11 +116,26 @@ class Sportedia_Subscription_Manager {
         $subscriptions = array();
 
         foreach ($results as $row) {
-            $user = get_userdata($row['user_id']);
-            $user_name  = $user ? $user->display_name : 'Unknown Member';
-            $emp_id     = get_user_meta($row['user_id'], 'sportedia_employee_id', true);
-            $user_phone = get_user_meta($row['user_id'], 'sportedia_phone', true);
-            $user_dob   = get_user_meta($row['user_id'], 'sportedia_dob', true);
+            $decoded = json_decode($row['notes'], true);
+            if (is_array($decoded) && isset($decoded['member_name'])) {
+                $user_name  = $decoded['member_name'];
+                $emp_id     = !empty($decoded['employee_id']) ? $decoded['employee_id'] : ('MEM-' . $row['id']);
+                $user_phone = isset($decoded['member_phone']) ? $decoded['member_phone'] : '';
+                $user_dob   = isset($decoded['member_dob']) ? $decoded['member_dob'] : 'N/A';
+                $avatar_url = isset($decoded['member_avatar']) ? $decoded['member_avatar'] : '';
+                $user_email = isset($decoded['member_email']) ? $decoded['member_email'] : '';
+                $display_notes = isset($decoded['sub_notes']) ? $decoded['sub_notes'] : '';
+            } else {
+                $user = get_userdata($row['user_id']);
+                $user_name  = $user ? $user->display_name : ('Member #' . $row['id']);
+                $emp_id     = get_user_meta($row['user_id'], 'sportedia_employee_id', true);
+                if (empty($emp_id)) $emp_id = 'MEM-' . $row['id'];
+                $user_phone = get_user_meta($row['user_id'], 'sportedia_phone', true);
+                $user_dob   = get_user_meta($row['user_id'], 'sportedia_dob', true);
+                $avatar_url = get_user_meta($row['user_id'], 'sportedia_avatar', true);
+                $user_email = $user ? $user->user_email : '';
+                $display_notes = $row['notes'];
+            }
 
             $coach_user = !empty($row['coach_id']) ? get_userdata($row['coach_id']) : null;
             $coach_name = $coach_user ? $coach_user->display_name : 'Unassigned Coach';
@@ -148,8 +163,9 @@ class Sportedia_Subscription_Manager {
             $row['employee_id']   = $emp_id;
             $row['member_phone']  = $user_phone;
             $row['member_dob']    = $user_dob ? $user_dob : 'N/A';
-            $row['member_avatar'] = get_user_meta($row['user_id'], 'sportedia_avatar', true);
-            $row['member_email']  = $user ? $user->user_email : '';
+            $row['member_avatar'] = $avatar_url;
+            $row['member_email']  = $user_email;
+            $row['sub_notes']     = $display_notes;
             $row['coach_name']    = $coach_name;
             $row['branch_name']   = $branch_name;
             $subscriptions[]      = $row;
@@ -200,7 +216,7 @@ class Sportedia_Subscription_Manager {
                 $member_phone = get_user_meta($user_id, 'sportedia_phone', true);
                 $member_id = get_user_meta($user_id, 'sportedia_employee_id', true);
             } else {
-                // New Member Creation
+                // New Member Registration (Architecturally separated from WP User Accounts to prevent bloat)
                 if (empty($member_name) || empty($member_phone)) {
                     wp_send_json_error('Member full name and mobile number are required.');
                 }
@@ -209,44 +225,36 @@ class Sportedia_Subscription_Manager {
                     $member_id = Sportedia_User_Manager::get_next_member_id('MEM-');
                 }
 
-                // Create WP User account so member appears in System Users
-                $username = strtolower(str_replace(' ', '', $member_id));
-                if (username_exists($username)) {
-                    $username = 'sp_' . $username . '_' . rand(10, 99);
-                }
-
-                if (empty($member_email)) {
-                    $member_email = $username . '@sportedia.online';
-                }
-
-                if (empty($member_pass)) {
-                    $member_pass = 'Sp#' . rand(100000, 999999);
-                }
-
-                $new_user_id = wp_create_user($username, $member_pass, $member_email);
-                if (is_wp_error($new_user_id)) {
-                    wp_send_json_error('Failed to create member account: ' . $new_user_id->get_error_message());
-                }
-
-                $user_id = $new_user_id;
-                $u = new WP_User($user_id);
-                $u->set_role('sportedia_customer');
-                wp_update_user(array('ID' => $user_id, 'display_name' => $member_name));
-
-                update_user_meta($user_id, 'sportedia_employee_id', $member_id);
-                update_user_meta($user_id, 'sportedia_phone', $member_phone);
-                if (!empty($member_dob)) update_user_meta($user_id, 'sportedia_dob', $member_dob);
-                update_user_meta($user_id, 'sportedia_status', 'active');
-
-                if ($branch_id > 0) {
-                    Sportedia_User_Manager::set_user_branches($user_id, array($branch_id));
+                $user_id = 0; // Pure subscriber record
+            }
+        } else {
+            // Edit existing subscription
+            $existing_sub = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table WHERE id = %d", $sub_id), ARRAY_A);
+            if ($existing_sub && !empty($existing_sub['notes'])) {
+                $decoded = json_decode($existing_sub['notes'], true);
+                if (is_array($decoded)) {
+                    if (empty($member_name) && !empty($decoded['member_name'])) $member_name = $decoded['member_name'];
+                    if (empty($member_id) && !empty($decoded['employee_id'])) $member_id = $decoded['employee_id'];
+                    if (empty($member_phone) && !empty($decoded['member_phone'])) $member_phone = $decoded['member_phone'];
                 }
             }
         }
 
-        if ($user_id <= 0 || empty($plan_name) || empty($start_date) || empty($end_date)) {
+        if (empty($plan_name) || empty($start_date) || empty($end_date)) {
             wp_send_json_error('Please fill in all required subscription fields.');
         }
+
+        // Package Subscriber JSON meta into notes column
+        $subscriber_meta = array(
+            'member_name'   => $member_name,
+            'employee_id'   => $member_id,
+            'member_phone'  => $member_phone,
+            'member_dob'    => $member_dob,
+            'member_email'  => $member_email,
+            'member_avatar' => '',
+            'sub_notes'     => $notes
+        );
+        $encoded_notes = json_encode($subscriber_meta);
 
         $sessions_count = 12;
         if ($program_id > 0) {
@@ -280,7 +288,7 @@ class Sportedia_Subscription_Manager {
             'start_date'        => $start_date,
             'end_date'          => $end_date,
             'price'             => $price,
-            'notes'             => $notes,
+            'notes'             => $encoded_notes,
             'status'            => $status,
         );
 

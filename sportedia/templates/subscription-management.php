@@ -79,9 +79,16 @@ foreach ((array)$curr_u->roles as $r) {
     <div style="display: flex; flex-direction: column; gap: 12px;" id="subscriptions_container">
         <?php foreach ($subscriptions as $s) : ?>
             <div class="sp-card" style="margin-bottom: 0; padding: 16px 20px; border-radius: var(--sp-radius); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
-                <div style="flex: 2; min-width: 220px;">
-                    <strong style="font-size: 15px; color: var(--sp-text-main); display: block;"><?php echo esc_html($s['member_name']); ?></strong>
-                    <span style="font-size: 11px; color: var(--sp-text-muted); font-family: monospace;">ID: <?php echo esc_html($s['employee_id']); ?></span>
+                <div style="display: flex; align-items: center; gap: 14px; flex: 2; min-width: 240px;">
+                    <?php if (!empty($s['member_avatar'])) : ?>
+                        <img src="<?php echo esc_url($s['member_avatar']); ?>" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 1px solid var(--sp-border-color);">
+                    <?php else : ?>
+                        <div class="sp-user-avatar" style="width: 44px; height: 44px; font-size: 16px; font-weight: 700; background: #e2e8f0; color: #1e293b; display: flex; align-items: center; justify-content: center; border-radius: 50%;"><?php echo esc_html(strtoupper(substr($s['member_name'], 0, 1))); ?></div>
+                    <?php endif; ?>
+                    <div>
+                        <strong style="font-size: 15px; color: var(--sp-text-main); display: block;"><?php echo esc_html($s['member_name']); ?></strong>
+                        <span style="font-size: 11px; color: var(--sp-text-muted); font-family: monospace;">ID: <?php echo esc_html($s['employee_id']); ?></span>
+                    </div>
                 </div>
 
                 <div style="flex: 2; min-width: 200px;">
@@ -105,14 +112,8 @@ foreach ((array)$curr_u->roles as $r) {
                         <?php echo esc_html(ucfirst($s['status'])); ?>
                     </span>
 
-                    <?php
-                        $clean_phone = preg_replace('/[^0-9]/', '', $s['member_phone']);
-                        $wa_text = rawurlencode("Hello " . $s['member_name'] . ",\n\nHere is your Sportedia Digital Subscriber ID Card:\nMember ID: " . $s['employee_id'] . "\nPlan: " . $s['plan_name'] . "\nValidity: " . $s['start_date'] . " to " . $s['end_date'] . "\nStatus: " . ucfirst($s['status']));
-                        $wa_link = "https://api.whatsapp.com/send?phone=" . $clean_phone . "&text=" . $wa_text;
-                    ?>
                     <button class="sp-btn sp-btn-secondary sp-btn-sm" onclick='viewA5Invoice(<?php echo json_encode($s); ?>)' title="Print Invoice">Invoice</button>
-                    <button class="sp-btn sp-btn-secondary sp-btn-sm" onclick='viewA6Card(<?php echo json_encode($s); ?>)' title="Membership Card">Card</button>
-                    <a href="<?php echo esc_url($wa_link); ?>" target="_blank" class="sp-btn sp-btn-secondary sp-btn-sm" style="color: #16a34a; border-color: #16a34a;" title="Share ID Card via WhatsApp">WhatsApp</a>
+                    <button class="sp-btn sp-btn-secondary sp-btn-sm" onclick='viewA6Card(<?php echo json_encode($s); ?>)' title="Membership Card">ID Card</button>
                     <button class="sp-btn sp-btn-secondary sp-btn-sm" onclick='editSub(<?php echo json_encode($s); ?>)'>Edit</button>
                     <button class="sp-btn sp-btn-secondary sp-btn-sm" style="color:#dc2626;" onclick="deleteSub(<?php echo $s['id']; ?>)">Delete</button>
                 </div>
@@ -880,9 +881,11 @@ function viewA6Card(s) {
     if (avatarUrl) {
         jQuery('#card_avatar_img').attr('src', avatarUrl).show();
         jQuery('#card_avatar_initial').hide();
+        jQuery('#card_avatar_box').css('display', 'flex').show();
     } else {
         jQuery('#card_avatar_img').hide();
-        jQuery('#card_avatar_initial').text(mName.charAt(0).toUpperCase()).show();
+        jQuery('#card_avatar_initial').hide();
+        jQuery('#card_avatar_box').hide();
     }
 
     jQuery('#card_status_badge').text(status.toUpperCase() + ' SUBSCRIBER')
